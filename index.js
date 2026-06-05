@@ -7,7 +7,7 @@
 //   BR.init({ appName: 'MyApp' })
 //   BR.e('tag', 'something went wrong')
 //
-// Platforms: uni-app / Vue / React / vanilla JS / Node
+// Platforms: uni-app / WeChat Mini Program / React Native / Capacitor / Browser / Node
 // ============================================================
 
 ;(function (root, factory) {
@@ -86,6 +86,32 @@
         },
         watch: function(cb) {
           try { if (typeof document !== 'undefined') document.addEventListener('netchange', function() { cb(_adapt.net.type()) }, false) } catch(e) {}
+        }
+      })
+    }
+    // WeChat Mini Program (standalone, not uni-app compiled)
+    else if (typeof wx !== 'undefined' && wx.getSystemInfoSync && typeof uni === 'undefined') {
+      adapter('device', function () {
+        try { var i = wx.getSystemInfoSync(); return { model: i.model||'', brand: i.brand||'', system: 'wechat', osVer: i.system||'', appVer: _cfg.appVersion, appName: _cfg.appName||'', w: i.windowWidth||0, h: i.windowHeight||0, dpr: i.pixelRatio||1, lang: i.language||'' } } catch(e) { return {} }
+      })
+      adapter('storage', {
+        get: function(k) { try { var v = wx.getStorageSync(k); return v ? JSON.parse(v) : null } catch(e) { return null } },
+        set: function(k,v) { try { wx.setStorageSync(k, JSON.stringify(v)) } catch(e) {} },
+        del: function(k) { try { wx.removeStorageSync(k) } catch(e) {} }
+      })
+      adapter('page', function () {
+        try { var p = getCurrentPages(); return p.length ? (p[p.length-1].route||'') : '' } catch(e) { return '' }
+      })
+      adapter('net', {
+        type: function () {
+          var type = 'unknown'
+          try {
+            wx.getNetworkType({ success: function(res) { type = res.networkType || 'unknown' } })
+          } catch(e) {}
+          return type
+        },
+        watch: function(cb) {
+          try { wx.onNetworkStatusChange(function(res) { _dev.netType = res.networkType; cb(res.networkType) }) } catch(e) {}
         }
       })
     }
@@ -241,6 +267,38 @@
     err: function(url, err) { return _emit(LEVEL.ERROR, CAT.NETWORK, 'net:err', String(err), '', { url:url }) },
     slow: function(url, ms) { return _emit(LEVEL.WARN, CAT.NETWORK, 'net:slow', ms+'ms '+String(url).slice(-80), '', { url:url, duration:ms }) },
     timeout: function(url, ms) { return _emit(LEVEL.ERROR, CAT.NETWORK, 'net:timeout', (ms||'?')+'ms', '', { url:url }) }
+  }
+
+  // ---- WeChat Mini Program Wrapper ----
+  // wx.request cannot be monkey-patched (C++ binding), so provide a manual wrapper
+  var wxWrap = {
+    req: function(opts) {
+      if (!opts || !opts.url) return
+      var start = Date.now()
+      var origSuccess = opts.success
+      var origFail = opts.fail
+      var origComplete = opts.complete
+      opts.success = function(res) {
+        var dur = Date.now() - start
+        var size = 0
+        try { size = JSON.stringify(res.data||'').length } catch(e) {}
+        net.req(opts.method||'GET', opts.url, res.statusCode, dur, size)
+        if (typeof origSuccess === 'function') origSuccess(res)
+        if (typeof origComplete === 'function') origComplete(res)
+      }
+      opts.fail = function(err) {
+        net.err(opts.url, err.errMsg||'wx.request failed')
+        if (typeof origFail === 'function') origFail(err)
+        if (typeof origComplete === 'function') origComplete(err)
+      }
+      wx.request(opts)
+    },
+    get: function(url, data, success, fail) {
+      wxWrap.req({ url: url, method: 'GET', data: data, success: success, fail: fail })
+    },
+    post: function(url, data, success, fail) {
+      wxWrap.req({ url: url, method: 'POST', data: data, success: success, fail: fail })
+    }
   }
 
   // ---- Network Auto-Patch ----
@@ -418,7 +476,9 @@
   function copyLogs(f) {
     var text = exportLogs('text', f)
     return new Promise(function(resolve) {
-      if (typeof uni !== 'undefined') {
+      if (typeof wx !== 'undefined' && wx.setClipboardData) {
+        wx.setClipboardData({ data: text, success: function(){resolve(true)}, fail: function(){resolve(false)} })
+      } else if (typeof uni !== 'undefined') {
         uni.setClipboardData({ data: text, success: function(){resolve(true)}, fail: function(){resolve(false)} })
       } else if (typeof navigator !== 'undefined' && navigator.clipboard) {
         navigator.clipboard.writeText(text).then(function(){resolve(true)}).catch(function(){resolve(false)})
@@ -455,7 +515,7 @@
     // Logging
     v: v, d: d, info: i, w: w, e: e, f: f,
     crash: function(t,m,s) { return _emit(LEVEL.FATAL, CAT.CRASH, t, m, s) },
-    net: net, perf: perf, life: life,
+    net: net, wx: wxWrap, perf: perf, life: life,
     // Query
     query: query, count: count, errCount: errCount, wrnCount: wrnCount, stats: stats,
     // Watch
