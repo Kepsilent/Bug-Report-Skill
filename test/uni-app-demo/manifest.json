@@ -1,7 +1,41 @@
 {
   "name": "BugReportTest",
   "appid": "__test__",
+  "description": "BugReport v2.1 uni-app test demo",
   "versionName": "1.0.0",
   "versionCode": "100",
-  "uni-app": { "compilerVersion": "3" }
+  "transformPx": false,
+  "app-plus": {
+    "usingComponents": true,
+    "nvueStyleCompiler": "uni-app",
+    "compilerVersion": 3,
+    "splashscreen": {
+      "alwaysShowBeforeRender": true,
+      "waiting": true,
+      "autoclose": true,
+      "delay": 0
+    },
+    "modules": {},
+    "distribute": {
+      "android": { "permissions": [] },
+      "ios": {},
+      "sdkConfigs": {}
+    }
+  },
+  "quickapp": {},
+  "mp-weixin": {
+    "appid": "",
+    "setting": { "urlCheck": false },
+    "usingComponents": true
+  },
+  "mp-alipay": {},
+  "mp-baidu": {},
+  "mp-toutiao": {},
+  "mp-qq": {},
+  "vueVersion": "3",
+  "h5": {
+    "title": "BugReport Test",
+    "devServer": { "port": 8080 }
+  },
+  "uniStatistics": { "enable": false }
 }
