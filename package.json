@@ -3,8 +3,17 @@
   "version": "2.1.0",
   "description": "万金油 Bug Report System — universal logging library with Claude Code skill for cross-platform bug diagnosis (uni-app, WeChat Mini Program, React Native, Android, Browser, Node)",
   "main": "index.js",
+  "module": "index.mjs",
+  "exports": {
+    ".": {
+      "import": "./index.mjs",
+      "require": "./index.js",
+      "default": "./index.js"
+    }
+  },
   "files": [
     "index.js",
+    "index.mjs",
     "log-viewer.vue",
     "log-viewer-common.vue",
     "SKILL.md"

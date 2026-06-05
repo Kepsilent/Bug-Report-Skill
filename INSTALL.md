@@ -9,26 +9,46 @@
 
 ---
 
-## Step 0: 检测项目类型
+## Step 0: 检测项目类型 + 模块系统
 
 先检查用户项目根目录的标识文件：
 
-| 标识文件 | 项目类型 | 跳转到 |
-|---------|---------|--------|
-| `manifest.json` + `pages.json` | uni-app (HBuilderX) | Step 1 |
-| `build.gradle.kts` + `AndroidManifest.xml` | Android Studio | Step 2 |
-| `app.json` + `project.config.json`（无 manifest.json） | 微信小程序（纯） | Step 3 |
-| `package.json` 含 `react-native` | React Native | Step 4 |
-| `package.json` 或 `index.html`（不匹配以上） | 普通 JS/Web | Step 5 |
-| 无法识别 | — | 问用户用什么框架 |
+| 标识文件 | 项目类型 | 模块系统 | 跳转到 |
+|---------|---------|---------|--------|
+| `manifest.json` + `pages.json` + `vite.config.*` | uni-app (HBuilderX) | **Vite/ESM** → 用 `index.mjs` | Step 1 |
+| `manifest.json` + `pages.json`（无 vite.config） | uni-app (旧版) | CommonJS → 用 `index.js` | Step 1 |
+| `build.gradle.kts` + `AndroidManifest.xml` | Android Studio | Gradle | Step 2 |
+| `app.json` + `project.config.json`（无 manifest.json） | 微信小程序（纯） | CommonJS | Step 3 |
+| `package.json` 含 `react-native` | React Native | Metro | Step 4 |
+| `package.json` 含 `webpack` 或 `vite` | Web/JS (bundler) | **ESM** → 用 `index.mjs` | Step 5 |
+| `package.json` 或 `index.html`（不匹配以上） | 普通 JS/Web | 传统 → 用 `index.js` | Step 5 |
+| 无法识别 | — | 问用户 | — |
+
+> **关键**: Vite/Webpack 项目**必须用 `index.mjs`**，否则 `import` 会失败。非 bundler 项目用 `index.js`。 |
 
 ---
 
 ## Step 1: uni-app (HBuilderX)
 
-### 1.1 复制文件
+### 1.0 扫描已有日志系统（迁移场景）
+在复制文件之前，先搜索项目中是否已有旧版 logger：
 ```bash
-# 从 BugReport 仓库复制 JS 日志库
+# 搜索常见的旧 logger 文件名
+grep -r "error-logger\|bug-report\|errorLogger\|bugReport" --include="*.js" --include="*.vue" --include="*.json" 用户项目/src/ 2>/dev/null
+```
+如果找到旧版（如 `error-logger.js`）：
+- 检查 `App.vue` 和 `pages.json` 中旧 logger 的引用
+- 安装完成后，把旧的 import 替换为新版，避免两个日志系统并存导致的白屏/冲突
+- 告诉用户："发现旧版 logger，已替换为 BugReport v2.1"
+
+### 1.1 复制文件
+根据 Step 0 的模块系统检测结果：
+
+```bash
+# Vite/Webpack 项目 → 用 index.mjs
+cp index.mjs 用户项目/src/utils/bug-report.js
+
+# 非 bundler 项目 → 用 index.js
 cp index.js 用户项目/src/utils/bug-report.js
 
 # 复制 uni-app 通用日志查看器
@@ -213,8 +233,9 @@ cp SKILL.md ~/.claude/skills/bug-report/
 
 ## 通用验证清单
 
-安装完成后，逐项检查：
+安装完成后，**必须逐项验证**，否则用户可能遇到白屏等严重问题：
 
+- [ ] 编译通过，App 不白屏
 - [ ] `BR.init()` 调用不报错
 - [ ] 控制台/logcat/Xcode 出现 `BugReport v2.1 initialized`
 - [ ] `BR.e('test', 'verify install')` 产生一条 ERROR 日志
@@ -222,3 +243,29 @@ cp SKILL.md ~/.claude/skills/bug-report/
 - [ ] `BR.exportLogs('text')` 返回格式化文本
 - [ ] log-viewer 页面可正常打开并显示日志列表
 - [ ] 网络请求被自动拦截（非小程序平台）
+
+---
+
+## 常见问题排查
+
+### ❌ 安装后 App 白屏
+
+**原因分析：**
+1. **ESM 导入失败** — Vite 项目用了 UMD 版 `index.js`，`import` 失败导致整个模块链断裂
+   - **修复：** 改用 `index.mjs` 重新安装
+2. **双 logger 冲突** — 旧的 `error-logger.js` 和新 `bug-report.js` 两个 `init()` 冲突
+   - **修复：** 删除旧 logger 的 import 和 init 调用，只保留新版
+3. **pages.json 路径错误** — 注册的页面路径跟实际文件位置对不上
+   - **修复：** 确认 `pages.json` 中的路径与文件实际路径一致
+
+### ❌ `import BR from ...` 报错
+
+- **Vite/Webpack 项目**：改用 `index.mjs`（不是 `index.js`）
+- **小程序**：改用 `const BR = require('./bug-report.js')`
+- **传统 `<script>` 标签**：直接用 `window.BugReport`，不需要 import
+
+### ❌ log-viewer 页面打不开
+
+- 检查 `pages.json` 中是否正确注册了页面路径
+- 检查 `.vue` 文件是否复制到了对应位置
+- 检查页面路径是否与其他路由冲突
