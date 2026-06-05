@@ -1,119 +1,267 @@
-# Bug-Report-Skill
+# 万金油 Bug Report System
 
-**Claude Code Skill — 全能 Bug 诊断与日志系统**
+[![JS](https://img.shields.io/badge/JS-HBuilderX-blue)](#hbuilderx--js)
+[![Kotlin](https://img.shields.io/badge/Kotlin-Android%20Studio-purple)](#android-studio--kotlin)
+[![Swift](https://img.shields.io/badge/Swift-iOS-orange)](#ios--swift-后续)
+[![WeChat](https://img.shields.io/badge/WeChat-Mini%20Program-green)](#微信小程序)
+[![uni-app](https://img.shields.io/badge/uni--app-✓-brightgreen)](#hbuilderx--js)
+[![MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
-A Claude Code skill for comprehensive bug diagnosis, paired with a zero-dependency logging library that works in any JavaScript app — uni-app, React Native, Capacitor, Cordova, Vue, React, vanilla JS, Node.js. **Network requests are auto-captured — no manual wiring needed.**
+**一套 Skill，通吃所有平台。** 零依赖、一行接入、自动网络拦截、统一暗色终端可视化。
 
-```
-E:3  W:12  N:45  P:5   36m uptime
+---
 
-all  errors(3)  warnings(12)  network(45)  perf(5)  crash(0)
+## 这是什么
 
-#47 E 19:32:05.231 NETWORK net:err
-     POST /api/evaluate-speech timeout (30s)
-     STACK TRACE
-     > at evaluate (speech-eval.js:142)
-```
+一个 Claude Code Skill + 多语言日志库的集合体：
 
-## What's Inside
+- **Skill** — 教会 Claude 如何诊断 Bug（5 阶段：收集→分析→追踪→报告→修复）
+- **日志库** — 自动采集崩溃/网络/性能数据，一行代码接入
+- **可视化面板** — IDE 暗色终端风格，开发时 AI 可读，发布后用户可看
 
-| File | Purpose |
-|------|---------|
-| `SKILL.md` | **主文件** — Claude Code Skill 定义，安装到 `~/.claude/skills/bug-report/` |
-| `index.js` | 配套 — 零依赖通用日志库 (UMD, 12KB)，自动适配 uni-app / React Native / Capacitor / 浏览器 / Node。**自动拦截 fetch 和 XHR** |
-| `log-viewer.vue` | 配套 — IDE 暗色终端风日志查看器，VS Code 风格 |
+## 版本
 
-## Install the Skill
+| SDK | 语言 | 平台 | 状态 |
+|-----|------|------|:---:|
+| `index.js` | JavaScript (UMD) | uni-app / 微信小程序 / React Native / Capacitor / 浏览器 / Node | ✅ Ready |
+| `android/` | Kotlin | Android Studio 原生应用 (Java/Kotlin) | ✅ Ready |
+| `ios/` | Swift | iOS 原生应用 | 🔜 后续 |
+
+所有版本共享统一的 **LogEntry 数据合约**，确保跨平台日志格式一致 — SKILL.md 无需修改即可诊断任何平台的 Bug。
+
+---
+
+## HBuilderX / JS 版
+
+### 安装
 
 ```bash
-# 1. Clone this repo
 git clone https://github.com/Kepsilent/Bug-Report-Skill.git
-
-# 2. Copy the skill to Claude Code
-cp SKILL.md ~/.claude/skills/bug-report/SKILL.md
-
-# 3. Copy the library to your project
 cp index.js your-project/src/utils/bug-report.js
-cp log-viewer.vue your-project/src/pages/debug-log.vue
+cp log-viewer-common.vue your-project/src/pages/debug-log.vue
 ```
 
-## Use the Skill
-
-In Claude Code, just type `/bug-report` or say "帮我排查这个错误" — the skill activates automatically.
-
-## Use the Library
+### 接入
 
 ```js
-import BR from './bug-report.js'
+import BR from '@/utils/bug-report.js'
 
-// One-line init — auto-captures crashes, promise errors, and ALL network requests
-BR.init({ appName: 'MyApp', appVersion: '1.0.0' })
+// 一行初始化 — 崩溃/网络/性能自动采集
+BR.init({ appName: '你的App', appVersion: '1.0.0' })
 
-// Log anything
+// 手动打点
 BR.info('page', 'Home loaded')
-BR.w('render', 'Slow render: 2100ms')
 BR.e('api', 'POST /login failed')
+BR.w('render', 'Slow render: 2100ms')
 
-// Network requests are auto-captured via fetch/XHR interception (on by default)
-// Just use fetch() or XMLHttpRequest as normal — BugReport logs every request automatically
+// 网络全自动（fetch/XHR 被 monkey-patch，无需手动接入）
+// 微信小程序：用 BR.wx.req() 包装 wx.request
 
-// Performance tracing
+// 性能追踪
 BR.perf.start('loadData')
-const ms = BR.perf.end('loadData')  // logs WARN if > 3s
+const ms = BR.perf.end('loadData')  // >3s 自动标 WARN
 
-// Real-time watch
+// 实时监听
 BR.watch(log => { if (log.level >= 4) notify(log.msg) })
 
-// Export all logs
-BR.copyLogs()  // Promise<boolean>
+// 查询 & 导出
+BR.query({ cat: 'NETWORK', minLevel: 3 })
+BR.exportLogs('text')  // text / json / csv
+BR.copyLogs()          // 一键复制
 ```
 
-## API Overview
+### 平台支持
 
-### Levels
-`V(0)` `D(1)` `I(2)` `W(3)` `E(4)` `F(5)`
+| 平台 | 自动检测 | 网络自动拦截 | log-viewer |
+|------|:---:|:---:|:---:|
+| uni-app (Android/iOS) | ✅ | ✅ (fetch/XHR) | `log-viewer-common.vue` |
+| 微信小程序 | ✅ | ⚠️ 需用 `BR.wx.req()` 包装 | `log-viewer-common.vue` |
+| React Native | ✅ | ✅ (WebView) | WebView 内嵌 viewer |
+| Capacitor / Cordova | ✅ | ✅ (fetch/XHR) | `log-viewer-common.vue` |
+| 浏览器 (Vue/React/vanilla) | ✅ | ✅ (fetch/XHR) | `log-viewer.vue` |
+| Node.js | ✅ | N/A | 无 DOM |
 
-### Categories
-`CRASH` `NETWORK` `RENDER` `LIFECYCLE` `PERF` `STORAGE` `AUDIO` `VIDEO` `EVAL` `APP` `USER` `SYSTEM`
+### API 速查
 
-### Methods
+| 分组 | 方法 |
+|------|------|
+| 日志 | `BR.v()` `BR.d()` `BR.info()` `BR.w()` `BR.e()` `BR.f()` `BR.crash()` |
+| 网络 | `BR.net.req()` `BR.net.err()` `BR.net.slow()` `BR.net.timeout()` |
+| 微信 | `BR.wx.req()` `BR.wx.get()` `BR.wx.post()` |
+| 性能 | `BR.perf.start()` `BR.perf.end()` `BR.perf.mark()` |
+| 生命周期 | `BR.life.fg()` `BR.life.bg()` `BR.life.in_()` `BR.life.out()` |
+| 查询 | `BR.query()` `BR.stats()` `BR.errCount()` `BR.wrnCount()` |
+| 导出 | `BR.exportLogs()` `BR.copyLogs()` `BR.clear()` |
+| 监听 | `BR.watch(cb)` 返回取消订阅函数 |
 
-| Group | Methods |
-|-------|---------|
-| Core | `init()` `v()` `d()` `info()` `w()` `e()` `f()` |
-| Network | `net.req(method,url,status,dur,size)` `net.err()` `net.slow()` `net.timeout()` |
-| Perf | `perf.start(name)` `perf.end(name,threshold?)` `perf.mark(name,ms)` |
-| Lifecycle | `life.fg()` `life.bg()` `life.in_()` `life.out()` |
-| Query | `query({level,cat,search,limit})` `stats()` `errCount()` `wrnCount()` |
-| Export | `exportLogs('text'|'json'|'csv')` `copyLogs()` `clear()` |
-| Watch | `watch(cb)` returns unsubscribe function |
+---
 
-## Log Viewer
+## Android Studio / Kotlin 版
 
-Dark terminal theme. VS Code aesthetic. Zero emoji.
+### 安装
 
-- Sequential `#ID` numbering
-- Color-coded level badges (V/D/I/W/E/F)
-- Monospace font (SF Mono / Cascadia Code)
-- Expandable stack traces
-- Network req details (method + status + duration + size)
-- Performance timing
-- Search/filter by level, category, keyword
-- Export as Text / JSON / CSV
+```gradle
+// settings.gradle.kts
+include(":bugreport")
+project(":bugreport").projectDir = File("path/to/bugreport/android")
 
-## Platform Support
+// app/build.gradle.kts
+implementation(project(":bugreport"))
+```
 
-| Platform | Auto-detected | Network Auto-Capture |
-|----------|:---:|:---:|
-| uni-app (Android/iOS) | Yes | Yes (WebView) |
-| React Native | Yes | Yes |
-| Capacitor / Cordova | Yes | Yes |
-| Browser (Vue/React/vanilla) | Yes | Yes |
-| Node.js | Yes | N/A (no fetch/XHR) |
-| Custom | via `BR.adapter()` | — |
+### 接入
 
-> Note: Pure native Android (Java/Kotlin) is not supported. This library targets JavaScript runtimes. For native Android, a Java port is planned separately.
+```kotlin
+// 一行初始化
+class MyApp : Application() {
+    override fun onCreate() {
+        super.onCreate()
+        BugReport.init(this)  // 自动开启崩溃捕获
+    }
+}
 
-## License
+// 日志 — 与 JS 版 API 一致
+BugReport.e("api", "POST /login failed")
+BugReport.info("page", "Home loaded")
+
+// 网络 — OkHttp 自动拦截, 也支持手动
+BugReport.net.req("POST", "/api/login", 500, 1234, 0)
+
+// 性能
+BugReport.perf.start("loadData")
+val ms = BugReport.perf.end("loadData")
+
+// 查询 & 导出
+val errors = BugReport.query(minLevel = 4)
+BugReport.copyLogs()
+
+// 内置 Log Viewer
+startActivity(Intent(this, LogViewerActivity::class.java))
+```
+
+### 开发时 AI 可读
+
+```bash
+adb logcat -s BugReport
+```
+
+输出格式：`#42 ERROR NETWORK net:err | Connection refused`
+
+---
+
+## 微信小程序
+
+纯小程序环境（非 uni-app 编译）：
+
+```js
+// 储存: wx.setStorageSync / wx.getStorageSync (单 key 1MB 限制)
+// 设备: wx.getSystemInfoSync()
+// 网络: 不能用 monkey-patch, 用 BR.wx.req() 包装
+BR.wx.req({
+  url: 'https://api.example.com/data',
+  method: 'GET',
+  success(res) { /* ... */ }
+})
+```
+
+> **注意**: uni-app 编译到小程序的无需特殊处理 — `index.js` 自动走 uni-app 适配器。
+
+---
+
+## 日志查看器
+
+所有平台统一暗色终端主题（VS Code 风格）：
+
+- 6 级色标 (V/D/I/W/E/F)
+- Tab 切换：全部 / 错误 / 警告 / 网络 / 性能 / 崩溃
+- 搜索过滤
+- 导出 Text / JSON / CSV
+- 一键复制
+- 实时刷新 / 暂停
+
+| 平台 | 查看器文件 |
+|------|-----------|
+| uni-app / H5 / 小程序 | `log-viewer-common.vue` |
+| 纯 Web / H5 | `log-viewer.vue` |
+| Android 原生 | `LogViewerActivity.kt` |
+
+---
+
+## Claude Code Skill
+
+安装 Skill 后，说"帮我排查这个错误"自动激活。Skill 会：
+
+1. **收集信息** — 自动检测平台（uni-app / 微信 / Android / iOS / Node）
+2. **分析日志** — 支持 BugReport JSON、logcat、os.Logger 多种格式
+3. **追踪代码** — 根据 stack/page 定位源文件
+4. **生成报告** — 写入项目 `bugs/` 目录
+5. **执行修复** — 风险低时直接改代码
+
+---
+
+## 统一数据合约
+
+所有平台的所有 SDK 产生相同格式的日志：
+
+```json
+{
+  "id": 42,
+  "ts": 1717651200000,
+  "time": "2026-06-05T12:00:00.000Z",
+  "level": 4,
+  "levelLabel": "ERROR",
+  "cat": "NETWORK",
+  "tag": "net:err",
+  "msg": "Connection refused",
+  "stack": "Error: ...\n  at ...",
+  "page": "pages/home/index",
+  "extra": { "url": "/api/data" },
+  "device": {
+    "model": "Pixel 9",
+    "brand": "Google",
+    "system": "android",
+    "osVer": "15",
+    "appVer": "1.0.0",
+    "appName": "声小言"
+  }
+}
+```
+
+**这是万金油的核心** — 日志格式统一，SKILL.md 不需要知道它来自哪个平台。
+
+---
+
+## 项目结构
+
+```
+Bug-Report-Skill/
+  index.js                  # JS 日志库 (UMD, 12KB)
+  log-viewer.vue            # H5/Web 日志查看器
+  log-viewer-common.vue     # uni-app 通用日志查看器（条件编译）
+  SKILL.md                  # Claude Code Skill 定义
+  README.md                 # 本文档
+  android/                  # Android Studio Kotlin SDK
+    build.gradle.kts
+    src/main/kotlin/com/bugreport/
+      BugReport.kt          # 单例入口
+      LogEntry.kt           # 数据模型
+      StorageAdapter.kt     # SharedPreferences 持久化
+      NetworkInterceptor.kt # OkHttp 自动拦截
+      CrashHandler.kt       # 全局崩溃捕获
+      PerfTracker.kt        # 性能追踪
+      QueryEngine.kt        # 日志查询
+      LogExporter.kt        # 导出器
+      viewer/
+        LogViewerActivity.kt
+        LogListAdapter.kt
+    src/main/res/layout/
+      activity_log_viewer.xml
+      item_log_entry.xml
+  ios/                      # 🔜 Swift SDK（后续开发）
+```
+
+---
+
+## 许可证
 
 MIT

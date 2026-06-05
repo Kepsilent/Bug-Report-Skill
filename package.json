@@ -1,0 +1,33 @@
+{
+  "name": "bugreport",
+  "version": "2.1.0",
+  "description": "万金油 Bug Report System — universal logging library with Claude Code skill for cross-platform bug diagnosis (uni-app, WeChat Mini Program, React Native, Android, Browser, Node)",
+  "main": "index.js",
+  "files": [
+    "index.js",
+    "log-viewer.vue",
+    "log-viewer-common.vue",
+    "SKILL.md"
+  ],
+  "keywords": [
+    "bug-report",
+    "logging",
+    "debug",
+    "uni-app",
+    "wechat",
+    "miniprogram",
+    "react-native",
+    "android",
+    "crash-reporter",
+    "network-monitor",
+    "claude-code",
+    "skill"
+  ],
+  "author": "Kepsilent",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Kepsilent/Bug-Report-Skill.git"
+  },
+  "homepage": "https://github.com/Kepsilent/Bug-Report-Skill#readme"
+}
