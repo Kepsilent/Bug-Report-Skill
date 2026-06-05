@@ -12,3 +12,8 @@ export default {
   }
 }
 </script>
+
+<style>
+/* Global styles */
+page { background-color: #0d1117; }
+</style>
