@@ -1,0 +1,9 @@
+{
+  "name": "bugreport-test",
+  "version": "1.0.0",
+  "description": "BugReport uni-app test demo",
+  "dependencies": {
+    "vue": "^3.4.0"
+  },
+  "devDependencies": {}
+}
