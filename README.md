@@ -29,22 +29,26 @@ https://github.com/Kepsilent/Bug-Report-Skill
 
 Claude 会自动读取项目的 [INSTALL.md](INSTALL.md)，识别你的项目是什么类型（uni-app？Android Studio？小程序？），然后自动复制文件、加代码、注册页面。**全程不用你动脑子。**
 
-### 第 3 步：开始使用
+### 第 3 步：装好了，直接用嘴说就行
 
-装好之后，在你的代码里只需要**一行**：
+安装完成后，所有能力自动生效。你想用的时候直接用自然语言：
 
-```js
-import BR from '@/utils/bug-report.js'
-BR.init({ appName: '你的App' })
-```
+> "帮我排查这个错误"
+> "分析一下这段日志"
+> "这个崩溃是什么原因？"
+> "/bug-report"
 
-然后：
-- **崩溃？** 自动捕获，不用你写 `try/catch`
-- **网络请求？** 自动拦截，不用你手动埋点
-- **想看日志？** 打开 App 里的 BugReport 面板（暗色终端风格）
-- **出 Bug 了？** 把日志贴给 Claude Code，说"帮我排查"，它自动诊断
+Claude 会自动激活诊断技能，帮你：
 
-> 不同平台的具体接入方式，往下翻。
+- 📋 **收集信息** — 自动检测你的平台（uni-app / 微信 / Android / iOS / Node）
+- 🔍 **分析日志** — 支持 BugReport JSON、logcat、os.Logger 多种格式
+- 📍 **追踪代码** — 根据堆栈直接定位到你项目里的源文件
+- 📝 **生成报告** — 结构化 Bug 报告写入 `bugs/` 目录
+- 🔧 **执行修复** — 根因明确时直接帮你改代码
+
+> 💡 不需要记任何命令，说人话就行。Skill 会根据你的描述自动激活。
+
+> 如果你是开发者想手动接入，往下翻各平台说明 ↓
 
 ---
 
@@ -259,7 +263,7 @@ BR.wx.req({
     "system": "android",
     "osVer": "15",
     "appVer": "1.0.0",
-    "appName": "声小言"
+    "appName": "MyApp"
   }
 }
 ```
