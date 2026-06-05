@@ -61,7 +61,7 @@ test('log levels work in browser', () => {
 
 // ===== LOCAL STORAGE PERSISTENCE =====
 test('localStorage persistence works', () => {
-  BR.clear()
+  BR.destroy()
   localStorage.removeItem('bugreport_logs')
   BR.init({ appName: 'Persist', persist: true, captureGlobal: false, capturePromise: false, captureNetwork: false })
   BR.e('persist', 'save me')
