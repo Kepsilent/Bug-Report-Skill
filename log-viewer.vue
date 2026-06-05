@@ -31,7 +31,6 @@
         class="br-input"
         v-model="searchText"
         placeholder="filter: tag, message, page, category..."
-        @input="onFilter"
       />
       <button class="br-btn br-btn-sm" @click="searchText=''; showSearch=false">close</button>
     </div>
@@ -199,7 +198,6 @@ export default {
       this.crashCount = (BR.query({cat:'CRASH'})||[]).length
       this.stats = BR.stats()
     },
-    onFilter() {},
     fmtTime(ts) {
       const d = new Date(ts)
       const pad = n => String(n).padStart(2,'0')
@@ -228,7 +226,6 @@ export default {
       if (!confirm('Clear all logs?')) return
       const BR = this.getBR()
       if (BR) BR.clear()
-      this.allLogs = []
       this.refresh()
     }
   },

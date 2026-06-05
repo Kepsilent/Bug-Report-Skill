@@ -35,7 +35,6 @@
         class="br-input"
         v-model="searchText"
         placeholder="filter: tag, message, page, category..."
-        @input="onFilter"
       />
       <view class="br-btn br-btn-sm" @tap="searchText=''; showSearch=false">
         <text>close</text>
@@ -71,7 +70,7 @@
     </scroll-view>
 
     <!-- Log list -->
-    <scroll-view class="br-list" scroll-y="true" :scroll-top="listScrollTop">
+    <scroll-view class="br-list" scroll-y="true">
       <view
         v-for="log in filtered"
         :key="log.id"
@@ -81,7 +80,7 @@
         <!-- Row -->
         <view class="br-row">
           <text class="br-id">#{{ log.id }}</text>
-          <text :class="['br-lv-badge', 'br-lv-bg-' + log.level]">{{ log.tagL || ['V','D','I','W','E','F'][log.level] }}</text>
+          <text :class="['br-lv-badge', 'br-lv-bg-' + log.level]">{{ log.tagL }}</text>
           <text class="br-time">{{ fmtTime(log.ts) }}</text>
           <text class="br-cat">{{ log.cat }}</text>
           <text class="br-msg">{{ log.msg || log.tag }}</text>
@@ -92,7 +91,7 @@
         <view class="br-detail" v-if="expand === log.id">
           <view class="br-meta">
             <view class="br-meta-row"><text class="br-meta-k">ID</text><text class="br-meta-v">{{ log.id }}</text></view>
-            <view class="br-meta-row"><text class="br-meta-k">Level</text><text class="br-meta-v">{{ log.tagN || ['VERBOSE','DEBUG','INFO','WARN','ERROR','FATAL'][log.level] }}</text></view>
+            <view class="br-meta-row"><text class="br-meta-k">Level</text><text class="br-meta-v">{{ log.tagN }}</text></view>
             <view class="br-meta-row"><text class="br-meta-k">Category</text><text class="br-meta-v">{{ log.cat }}</text></view>
             <view class="br-meta-row"><text class="br-meta-k">Tag</text><text class="br-meta-v">{{ log.tag }}</text></view>
             <view class="br-meta-row"><text class="br-meta-k">Page</text><text class="br-meta-v">{{ log.page }}</text></view>
@@ -168,7 +167,6 @@ export default {
       showSearch: false,
       showExport: false,
       autoRefresh: true,
-      listScrollTop: 0,
       errCount: 0,
       wrnCount: 0,
       netCount: 0,
@@ -223,7 +221,6 @@ export default {
       this.crashCount = (BR.query({cat:'CRASH'})||[]).length
       this.stats = BR.stats()
     },
-    onFilter() {},
     fmtTime(ts) {
       const d = new Date(ts)
       const pad = n => String(n).padStart(2,'0')
@@ -285,7 +282,6 @@ export default {
     _doClear() {
       const BR = this.getBR()
       if (BR) BR.clear()
-      this.allLogs = []
       this.refresh()
     }
   },

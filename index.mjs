@@ -22,8 +22,6 @@
   var LEVEL = Object.freeze({ VERBOSE: 0, DEBUG: 1, INFO: 2, WARN: 3, ERROR: 4, FATAL: 5 })
   var LEVEL_LABEL = ['V', 'D', 'I', 'W', 'E', 'F']
   var LEVEL_NAME  = ['VERBOSE', 'DEBUG', 'INFO', 'WARN', 'ERROR', 'FATAL']
-  var LEVEL_COLOR = ['#6e7681', '#6e7681', '#58a6ff', '#d29922', '#f85149', '#f85149']
-
   var CAT = {
     CRASH:     'CRASH',
     NETWORK:   'NETWORK',
@@ -369,9 +367,9 @@
 
   function _unpatchNetwork() {
     if (typeof window === 'undefined') return
-    if (_netFetchRef) { window.fetch = _netFetchRef; _netFetchRef = null; if (window.fetch) delete window.fetch.__br_patched }
+    if (_netFetchRef) { window.fetch = _netFetchRef; _netFetchRef = null }
     if (_netXHROpenRef) { XMLHttpRequest.prototype.open = _netXHROpenRef; _netXHROpenRef = null }
-    if (_netXHRSendRef) { XMLHttpRequest.prototype.send = _netXHRSendRef; _netXHRSendRef = null; delete XMLHttpRequest.__br_patched }
+    if (_netXHRSendRef) { XMLHttpRequest.prototype.send = _netXHRSendRef; _netXHRSendRef = null }
   }
 
   // ---- Performance ----
@@ -434,7 +432,7 @@
 
   // ---- Export ----
   function exportLogs(format, f) {
-    var logs = query(f||{})
+    var logs = query(f)
     var dev = _dev
 
     if (format === 'csv') {
@@ -509,7 +507,7 @@
   // ---- API ----
   return {
     // Constants
-    LEVEL: LEVEL, LEVEL_LABEL: LEVEL_LABEL, LEVEL_NAME: LEVEL_NAME, LEVEL_COLOR: LEVEL_COLOR, CAT: CAT,
+    LEVEL: LEVEL, LEVEL_LABEL: LEVEL_LABEL, LEVEL_NAME: LEVEL_NAME, CAT: CAT,
     // Init
     init: init, destroy: destroy, flush: flush, adapter: adapter,
     // Logging
