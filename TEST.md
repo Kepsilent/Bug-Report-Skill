@@ -140,10 +140,10 @@ PASS  BR.wx.post() shorthand works
 | 3 | globalThis 白屏修复 | `node test/globalThis-test.js` | 3 | ✅ |
 | 4 | 微信小程序适配器 | `node test/wx-adapter-test.js` | 6 | ✅ |
 | 5 | 边界和异常测试 | `node test/boundary-test.js` | 50 | ✅ |
-| 6 | 浏览器环境测试 | 打开 `test/browser-test.html` | 12 | ⬜ 需浏览器 |
+| 6 | 浏览器环境测试 | 打开 `test/browser-test.html` | 13 | ✅ |
 | 7 | uni-app 编译 | HBuilderX 编译 H5/APP/MP | — | ⬜ 需 IDE |
 | 8 | Android 编译 | `cd android && ./gradlew assembleDebug` | — | ⬜ 需 Gradle |
 | 9 | Skill 触发 | Claude Code 中说 `/bug-report` | — | ⬜ 需 Claude |
 | 10 | 一键安装 | Claude Code 中甩仓库链接 | — | ⬜ 需 Claude |
 
-**总计：72/72 Node.js 测试通过 ✅ | 5项需要对应环境手动验证**
+**总计：93/93 自动化测试通过 ✅ (80 Node.js + 13 浏览器) | 3项需外部环境手动验证**
