@@ -5,7 +5,7 @@ description: >
   "帮我看看这个错误"、"分析日志"、分享错误截图/消息、或任何异常行为描述。
   支持实时日志分析、代码追踪、性能诊断、修复建议。零手动接入网络监控，可嵌入任何项目使用。
  
- 覆盖平台：uni-app / React Native / Capacitor / Cordova / 浏览器 / Node.js
+ 覆盖平台：uni-app / 微信小程序 / React Native / Capacitor / Cordova / 浏览器 / Node.js / Android 原生(Kotlin)
 ---
 
 # BugReport — 全能 Bug 诊断技能
@@ -27,8 +27,10 @@ description: >
 
 | 文件 | 说明 |
 |------|------|
-| `index.js` | 零依赖通用日志库 (UMD, 12KB)，自动适配 uni-app / 浏览器 / Node |
-| `log-viewer.vue` | IDE 暗色终端风日志查看器组件，VS Code 风格 |
+| `index.js` | 零依赖通用日志库 (UMD, 12KB)，自动适配 uni-app / 微信小程序 / React Native / 浏览器 / Node |
+| `log-viewer.vue` | H5/Web 日志查看器组件，VS Code 暗色终端风格 |
+| `log-viewer-common.vue` | uni-app 通用日志查看器（H5 + 微信小程序 + APP-PLUS 条件编译） |
+| `android/` | Android Studio 原生 Kotlin SDK（OkHttp 拦截器 + Logcat + LogViewerActivity） |
 
 ### 接入方式
 
@@ -64,6 +66,19 @@ BR.init({ appName: '你的App', appVersion: '1.0.0' })
 | 频率 | 必现 / 偶发 / 特定条件下 |
 | 严重度 | Fatal(崩溃/不可用) / Error(核心功能异常) / Warn(部分异常) / Info(仅UI) |
 
+### 平台检测
+
+根据用户描述、日志格式或项目结构，自动识别运行平台：
+
+| 信号 | 平台 | 日志获取方式 |
+|------|------|-------------|
+| `pages.json` / `manifest.json` / `#ifdef APP-PLUS` | uni-app (HBuilderX) | App 内 log-viewer 面板 → export |
+| `wx.` API / WXML / `app.json` / `project.config.json` | 微信小程序 | `BR.wx.req()` 包装器 + 小程序内 viewer 页面 |
+| `.kt` / `.java` / `build.gradle` / `adb logcat` | Android 原生 (Android Studio) | `adb logcat -s BugReport` 或 LogViewerActivity |
+| `.swift` / Xcode 项目 / `Package.swift` | iOS 原生 | Xcode 控制台或 LogViewerController |
+| `navigator.product === 'ReactNative'` | React Native | 同 JS 版，WebView 内 viewer |
+| Edge Function 日志 / `Deno` 提及 | Supabase 后端 | 直接粘贴 Function logs |
+
 ### 日志获取
 
 日志已自动采集到 App 本地。用户获取方式：
@@ -86,6 +101,18 @@ I (Info)   → 上下文线索（页面切换、网络变化）
 D/V        → 追踪操作链路
 ```
 
+### 日志格式识别
+
+BugReport 支持多种日志来源，收到日志时首先识别格式：
+
+| 格式 | 特征 | 解析方法 |
+|------|------|---------|
+| BugReport JSON | `"level"`, `"cat"`, `"tagL"`, `"device"` 字段 | 直接解析，所有字段已结构化 |
+| BugReport Text | `BugReport Log Export` 头部 + `#ID E TIME CAT tag` | 按行解析，提取 ID/级别/分类/消息 |
+| Android logcat | `E/TAG ( PID): message` 格式 | 正则 `^([VDIWEF])/(\S+)\s*\(\s*\d+\):\s*(.*)` |
+| iOS os.Logger | `timestamp LEVEL Subsystem[pid:tid] message` | 正则解析时间戳和级别 |
+| Node.js console | 混合格式，可能含 ANSI 颜色码 | 按 ERROR/WARN 关键词分层，尝试 JSON 解析 |
+
 ### 分析框架
 
 1. **时间线重建** — 按 `#ID` 排列，还原用户操作路径
@@ -107,7 +134,7 @@ D/V        → 追踪操作链路
 5. 检查权限声明（AndroidManifest / manifest.json）
 6. 检查条件编译代码（`#ifdef APP-PLUS` 等）
 
-### 常见根因速查
+### 常见根因速查（通用）
 
 | 症状 | 可能原因 |
 |------|---------|
@@ -117,6 +144,52 @@ D/V        → 追踪操作链路
 | 白屏/空页面 | Vue 渲染异常被吞、数据格式不匹配 |
 | 内存溢出 | 图片未释放、大文件未分片 |
 | 评分 90+ 但静音 | 未做静音检测，RMS < 50 应判 0 分 |
+
+### 平台特定根因速查
+
+#### uni-app (HBuilderX)
+| 症状 | 可能原因 |
+|------|---------|
+| `uni is not defined` | 非 uni-app 环境调用了 uni API |
+| `plus is not defined` | H5 端使用了 App-Plus 专属 API |
+| `getCurrentPages` 返回空 | 在 App.vue 的 onLaunch 中调用过早 |
+| `hideLoading:fail toast can't be found` | 连续调用 showLoading/hideLoading 时序问题 |
+| WebSocket 频繁断开 | APP-PLUS 后台运行时 WebSocket 被系统挂起 |
+
+#### 微信小程序
+| 症状 | 可能原因 |
+|------|---------|
+| `wx.request` 静默失败 | 服务器域名不在白名单中（需在 mp 后台配置） |
+| 存储写入失败 | 单 key >1MB 或总存储 >10MB，需清理旧日志 |
+| `wx.getSystemInfoSync` 报错 | 小程序基础库版本过低（需 >= 1.0.0） |
+| 网络请求无法拦截 | `wx.request` 是 C++ 绑定不能 monkey-patch，需用 `BR.wx.req()` 包装 |
+| `<web-view>` 内日志无法获取 | web-view 沙箱隔离，需通过 `postMessage` 桥接 |
+
+#### Android 原生 (Kotlin)
+| 症状 | 可能原因 |
+|------|---------|
+| `NetworkOnMainThreadException` | 主线程发起 HTTP 请求，需用协程/线程池 |
+| `WindowManager$BadTokenException` | 在已销毁的 Activity 上弹 Dialog |
+| `OutOfMemoryError` | Bitmap/大文件未回收，日志缓冲区过大 |
+| `SecurityException` (存储权限) | Android 11+ 的 scoped storage，需声明 `MANAGE_EXTERNAL_STORAGE` |
+| OkHttp 拦截器不生效 | 未使用 OkHttp 客户端，或自定义了 client builder |
+| `adb logcat` 日志被截断 | logcat 单条消息限制 ~4KB，长 JSON 需分段输出 |
+
+#### iOS 原生 (Swift)
+| 症状 | 可能原因 |
+|------|---------|
+| ATS 阻止 HTTP 请求 | 需在 Info.plist 中配置 NSAppTransportSecurity |
+| `NSInternalInconsistencyException` | AutoLayout 约束冲突 |
+| URLProtocol 不拦截请求 | WKWebView 默认不走 URLSession，需私有 API |
+| 后台任务被杀死 | iOS 后台限制，仅 30s 执行时间 |
+
+#### 后端 (Supabase Edge Functions / Node)
+| 症状 | 可能原因 |
+|------|---------|
+| Edge Function 超时 | 默认 30s 限制，需分块处理或改用异步 |
+| `Cannot find module 'wx-server-sdk'` | 微信云函数依赖未安装，需 `npm install` |
+| `Request path contains unescaped characters` | URL 包含中文或特殊字符未 encode |
+| Supabase 连接超时 | 冷启动延迟，或数据库连接池耗尽 |
 
 ---
 
