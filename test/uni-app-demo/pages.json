@@ -1,0 +1,12 @@
+{
+  "pages": [
+    {
+      "path": "pages/index/index",
+      "style": { "navigationBarTitleText": "BugReport Test" }
+    },
+    {
+      "path": "pages/debug-log/debug-log",
+      "style": { "navigationBarTitleText": "Log Viewer" }
+    }
+  ]
+}

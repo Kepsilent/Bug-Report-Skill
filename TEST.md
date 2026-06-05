@@ -55,64 +55,64 @@ PASS  CJS module.exports path sets globalThis.BugReport
 
 ---
 
-## 测试 4：Android Kotlin SDK — 编译测试
+## 测试 4：uni-app 编译测试（HBuilderX）
 
-需要 Android Studio / Gradle 环境。
+### 步骤
 
-```bash
-cd d:\wanjie\Bug-Report-Skill\android
-gradle assembleDebug
-```
+1. 打开 **HBuilderX**
+2. 文件 → 打开目录 → 选择 `test/uni-app-demo/`
+3. 工具栏点 **运行 → 运行到浏览器 → Chrome**（H5 测试）
+4. 页面应该显示 BugReport Test，点 **Run All Tests** 按钮
+5. 预期：全部 10 项 ✅ 通过
+6. 点 **Open Log Viewer** → 打开暗色终端日志面板
+7. 再试试 **运行 → 运行到手机或模拟器 → Android**（APP-PLUS 测试）
 
-预期输出：`BUILD SUCCESSFUL`
+### 测试项目包含什么
+- `App.vue` — `BR.init()` 初始化
+- `pages/index/index.vue` — 10 项自动化测试 + 按钮
+- `pages/debug-log/debug-log.vue` — 日志查看器
+- `utils/bug-report.js` — BugReport 库
 
 ---
 
-## 测试 5：iOS Swift SDK — 编译测试
+## 测试 5：Android Studio 编译测试
 
-需要 Xcode 环境。
+### 步骤
 
-```bash
-cd d:\wanjie\Bug-Report-Skill\ios
-swift build
-```
+1. 打开 **Android Studio**
+2. File → Open → 选择 `test/android-demo/`
+3. 等待 Gradle sync 完成
+4. 点击 **Run 'app'**（绿色三角形）
+5. 选择模拟器或真机
+6. App 启动后自动运行测试，预期全部 ✅
+7. 点 **Open Log Viewer** 查看暗色终端日志面板
+8. 另开终端运行 `adb logcat -s BugReport` 确认 AI 可读日志输出
 
-预期输出：`Build complete!`
+### 测试项目包含什么
+- `DemoApp.kt` — `BugReport.init(this)` 一行初始化
+- `MainActivity.kt` — 自动化测试 + 按钮 + 查看器入口
+- 依赖 `:bugreport` 库模块（指向 `../../android`）
 
 ---
 
 ## 测试 6：SKILL.md — Claude Code 触发测试
 
-在 Claude Code 中依次测试：
+把 `SKILL.md` 复制到 Claude Code 的 skills 目录，然后依次测试：
 
 | 输入 | 预期行为 |
 |------|---------|
-| `/bug-report` | Skill 激活，显示诊断界面 |
+| `/bug-report` | Skill 激活 |
 | "帮我排查这个错误" | Skill 激活 |
-| "分析日志" | Skill 激活 |
-| 粘贴一段 JSON 日志 | Skill 识别为 BugReport JSON 格式，开始分析 |
+| "帮我安装这个 BugReport" | Claude 读取 INSTALL.md 自动安装 |
 
 ---
 
 ## 测试 7：INSTALL.md — 一键安装测试
 
-新建一个临时 uni-app 项目，测试安装流程：
-
-```bash
-# 创建一个空 uni-app 项目
-mkdir test-project && cd test-project
-echo '{"name":"test"}' > package.json
-touch manifest.json pages.json
-
-# 让 Claude 安装
-# 输入: "https://github.com/Kepsilent/Bug-Report-Skill 帮我安装这个"
-
-# 验证:
-# [ ] index.js/index.mjs 复制到了 src/utils/bug-report.js
-# [ ] log-viewer-common.vue 复制到了 src/pages/debug-log.vue
-# [ ] pages.json 添加了 debug-log 页面
-# [ ] 文件内容完整，不是 0 字节
-```
+在 Claude Code 中：
+1. 输入 `https://github.com/Kepsilent/Bug-Report-Skill`
+2. 然后说"帮我安装这个 BugReport 到我的项目"
+3. 验证 Claude 是否正确检测了项目类型、复制了文件、添加了代码
 
 ---
 
