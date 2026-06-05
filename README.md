@@ -9,23 +9,42 @@
 
 **一套 Skill，通吃所有平台。** 零依赖、一行接入、自动网络拦截、统一暗色终端可视化。
 
-## 一键安装（让 Claude Code 帮你装）
+---
 
-**第 1 步**：把 GitHub 链接发给 Claude Code：
+## 🚀 小白三分钟上手
+
+看不懂下面一堆技术名词？没关系，只要你会用 Claude Code 就行。
+
+### 第 1 步：把链接发给 Claude Code
+
+复制下面这个链接，粘贴给 Claude Code：
 
 ```
 https://github.com/Kepsilent/Bug-Report-Skill
 ```
 
-**第 2 步**：告诉它：
+### 第 2 步：告诉它帮你装
 
 > "帮我安装这个 BugReport 到我的项目"
 
-Claude 会自动读取项目的 [INSTALL.md](INSTALL.md)，识别你的项目类型（uni-app / Android / 小程序 / React Native / Web），然后复制文件、添加初始化代码、注册查看器页面，一条龙搞定。
+Claude 会自动读取项目的 [INSTALL.md](INSTALL.md)，识别你的项目是什么类型（uni-app？Android Studio？小程序？），然后自动复制文件、加代码、注册页面。**全程不用你动脑子。**
 
-> 如果你已经装了 Skill，也可以直接说 `/bug-report 安装`，Skill 会读取 INSTALL.md 引导安装。
+### 第 3 步：开始使用
 
-手动安装请往下看各平台说明 ↓
+装好之后，在你的代码里只需要**一行**：
+
+```js
+import BR from '@/utils/bug-report.js'
+BR.init({ appName: '你的App' })
+```
+
+然后：
+- **崩溃？** 自动捕获，不用你写 `try/catch`
+- **网络请求？** 自动拦截，不用你手动埋点
+- **想看日志？** 打开 App 里的 BugReport 面板（暗色终端风格）
+- **出 Bug 了？** 把日志贴给 Claude Code，说"帮我排查"，它自动诊断
+
+> 不同平台的具体接入方式，往下翻。
 
 ---
 
