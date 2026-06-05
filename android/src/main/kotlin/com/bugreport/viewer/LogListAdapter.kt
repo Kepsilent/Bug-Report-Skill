@@ -9,6 +9,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.bugreport.LogEntry
 import com.bugreport.LogLevel
+import com.bugreport.R
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale

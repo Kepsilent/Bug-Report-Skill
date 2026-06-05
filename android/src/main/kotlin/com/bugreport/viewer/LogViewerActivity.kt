@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bugreport.BugReport
 import com.bugreport.LogEntry
 import com.bugreport.LogLevel
+import com.bugreport.R
 
 /**
  * In-app log viewer — dark terminal theme matching log-viewer.vue.
