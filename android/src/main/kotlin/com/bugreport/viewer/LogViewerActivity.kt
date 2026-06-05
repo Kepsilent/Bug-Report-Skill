@@ -14,9 +14,10 @@ import com.bugreport.BugReport
 import com.bugreport.LogEntry
 import com.bugreport.LogLevel
 import com.bugreport.R
+import java.util.Locale
 
 /**
- * In-app log viewer — dark terminal theme matching log-viewer.vue.
+ * In-app log viewer — dark terminal theme, auto i18n (zh-CN / en).
  * Open via: startActivity(Intent(context, LogViewerActivity::class.java))
  */
 class LogViewerActivity : AppCompatActivity() {
@@ -32,6 +33,11 @@ class LogViewerActivity : AppCompatActivity() {
     private var unwatch: (() -> Unit)? = null
     private var allLogs = listOf<LogEntry>()
 
+    // ---- i18n ----
+    private val isZh = Locale.getDefault().language.startsWith("zh")
+
+    private fun t(zh: String, en: String): String = if (isZh) zh else en
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_log_viewer)
@@ -41,8 +47,7 @@ class LogViewerActivity : AppCompatActivity() {
         tabBar = findViewById(R.id.tab_bar)
         searchInput = findViewById(R.id.search_input)
 
-        adapter = LogListAdapter { entry ->
-            // Toggle expand
+        adapter = LogListAdapter(isZh) { entry ->
             adapter.toggleExpand(entry.id)
         }
         listView.layoutManager = LinearLayoutManager(this)
@@ -61,7 +66,14 @@ class LogViewerActivity : AppCompatActivity() {
     }
 
     private fun setupTabs() {
-        val tabs = listOf("all" to 0, "errors" to 1, "warnings" to 2, "network" to 3, "perf" to 4, "crash" to 5)
+        val tabs = listOf(
+            t("全部", "all") to 0,
+            t("错误", "errors") to 1,
+            t("警告", "warnings") to 2,
+            t("网络", "network") to 3,
+            t("性能", "perf") to 4,
+            t("崩溃", "crash") to 5
+        )
         for ((label, index) in tabs) {
             val tab = TextView(this).apply {
                 text = label
@@ -108,40 +120,40 @@ class LogViewerActivity : AppCompatActivity() {
         }
 
         adapter.submitList(allLogs)
-        statusBar.text = "${allLogs.size} logs | ${formatDuration(stats.sessionMs)} uptime | ${stats.device?.model ?: ""}"
+        val logsLabel = t("条日志", "logs")
+        val uptimeLabel = t("运行时长", "uptime")
+        statusBar.text = "${allLogs.size} $logsLabel | $uptimeLabel ${formatDuration(stats.sessionMs)} | ${stats.device?.model ?: ""}"
     }
 
-    fun onSearch(v: View) {
-        refresh()
-    }
+    fun onSearch(v: View) { refresh() }
 
     fun onExportText(v: View) {
         val text = BugReport.exportLogs("text")
         copyToClipboard(text)
-        Toast.makeText(this, "Copied to clipboard", Toast.LENGTH_SHORT).show()
+        Toast.makeText(this, t("已复制到剪贴板", "Copied to clipboard"), Toast.LENGTH_SHORT).show()
     }
 
     fun onExportJson(v: View) {
         val text = BugReport.exportLogs("json")
         copyToClipboard(text)
-        Toast.makeText(this, "Copied to clipboard", Toast.LENGTH_SHORT).show()
+        Toast.makeText(this, t("已复制到剪贴板", "Copied to clipboard"), Toast.LENGTH_SHORT).show()
     }
 
     fun onClear(v: View) {
         androidx.appcompat.app.AlertDialog.Builder(this)
-            .setTitle("Clear Logs")
-            .setMessage("Clear all logs?")
-            .setPositiveButton("Clear") { _, _ ->
+            .setTitle(t("清空日志", "Clear Logs"))
+            .setMessage(t("确定清空所有日志吗？", "Clear all logs?"))
+            .setPositiveButton(t("清空", "Clear")) { _, _ ->
                 BugReport.clear()
                 refresh()
             }
-            .setNegativeButton("Cancel", null)
+            .setNegativeButton(t("取消", "Cancel"), null)
             .show()
     }
 
     fun onToggleLive(v: View) {
         autoRefresh = !autoRefresh
-        (v as? TextView)?.text = if (autoRefresh) "|| pause" else "> live"
+        (v as? TextView)?.text = if (autoRefresh) t("|| 暂停", "|| pause") else t("> 实时", "> live")
     }
 
     private fun copyToClipboard(text: String) {

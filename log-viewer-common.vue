@@ -5,17 +5,17 @@
       <view class="br-tb-left">
         <text class="br-tb-title">BugReport</text>
         <view :class="['br-dot', errCount > 0 ? 'br-dot-err' : 'br-dot-ok']"></view>
-        <text class="br-tb-stat">{{ errCount > 0 ? errCount + ' issues' : 'OK' }}</text>
+        <text class="br-tb-stat">{{ errCount > 0 ? errCount + ' ' + t('status_issues') : t('status_ok') }}</text>
       </view>
       <view class="br-tb-right">
         <view class="br-btn" @tap="autoRefresh = !autoRefresh">
-          <text>{{ autoRefresh ? '|| pause' : '> live' }}</text>
+          <text>{{ autoRefresh ? t('btn_pause') : t('btn_live') }}</text>
         </view>
         <view class="br-btn" @tap="showExport = !showExport">
-          <text>export</text>
+          <text>{{ t('btn_export') }}</text>
         </view>
         <view class="br-btn" @tap="showSearch = !showSearch">
-          <text>filter</text>
+          <text>{{ t('btn_filter') }}</text>
         </view>
       </view>
     </view>
@@ -34,37 +34,37 @@
       <input
         class="br-input"
         v-model="searchText"
-        placeholder="filter: tag, message, page, category..."
+        :placeholder="t('search_placeholder')"
       />
       <view class="br-btn br-btn-sm" @tap="searchText=''; showSearch=false">
-        <text>close</text>
+        <text>{{ t('btn_close') }}</text>
       </view>
     </view>
 
     <!-- Tabs -->
     <scroll-view class="br-tabs" scroll-x="true">
       <view :class="['br-tab', { on: tab===0 }]" @tap="tab=0">
-        <text>all</text>
+        <text>{{ t('tab_all') }}</text>
         <text class="br-badge" v-if="allLogs.length">{{ allLogs.length }}</text>
       </view>
       <view :class="['br-tab br-tab-e', { on: tab===1 }]" @tap="tab=1">
-        <text>errors</text>
+        <text>{{ t('tab_errors') }}</text>
         <text class="br-badge br-badge-e" v-if="errCount">{{ errCount }}</text>
       </view>
       <view :class="['br-tab br-tab-w', { on: tab===2 }]" @tap="tab=2">
-        <text>warnings</text>
+        <text>{{ t('tab_warnings') }}</text>
         <text class="br-badge br-badge-w" v-if="wrnCount">{{ wrnCount }}</text>
       </view>
       <view :class="['br-tab', { on: tab===3 }]" @tap="tab=3">
-        <text>network</text>
+        <text>{{ t('tab_network') }}</text>
         <text class="br-badge" v-if="netCount">{{ netCount }}</text>
       </view>
       <view :class="['br-tab', { on: tab===4 }]" @tap="tab=4">
-        <text>perf</text>
+        <text>{{ t('tab_perf') }}</text>
         <text class="br-badge" v-if="perfCount">{{ perfCount }}</text>
       </view>
       <view :class="['br-tab', { on: tab===5 }]" @tap="tab=5">
-        <text>crash</text>
+        <text>{{ t('tab_crash') }}</text>
         <text class="br-badge br-badge-e" v-if="crashCount">{{ crashCount }}</text>
       </view>
     </scroll-view>
@@ -90,68 +90,112 @@
         <!-- Expanded detail -->
         <view class="br-detail" v-if="expand === log.id">
           <view class="br-meta">
-            <view class="br-meta-row"><text class="br-meta-k">ID</text><text class="br-meta-v">{{ log.id }}</text></view>
-            <view class="br-meta-row"><text class="br-meta-k">Level</text><text class="br-meta-v">{{ log.tagN }}</text></view>
-            <view class="br-meta-row"><text class="br-meta-k">Category</text><text class="br-meta-v">{{ log.cat }}</text></view>
-            <view class="br-meta-row"><text class="br-meta-k">Tag</text><text class="br-meta-v">{{ log.tag }}</text></view>
-            <view class="br-meta-row"><text class="br-meta-k">Page</text><text class="br-meta-v">{{ log.page }}</text></view>
-            <view class="br-meta-row"><text class="br-meta-k">Time</text><text class="br-meta-v">{{ log.time }}</text></view>
-            <view class="br-meta-row" v-if="log.extra"><text class="br-meta-k">Data</text><text class="br-meta-v br-meta-code">{{ fmtExtra(log.extra) }}</text></view>
+            <view class="br-meta-row"><text class="br-meta-k">{{ t('detail_id') }}</text><text class="br-meta-v">{{ log.id }}</text></view>
+            <view class="br-meta-row"><text class="br-meta-k">{{ t('detail_level') }}</text><text class="br-meta-v">{{ log.tagN }}</text></view>
+            <view class="br-meta-row"><text class="br-meta-k">{{ t('detail_category') }}</text><text class="br-meta-v">{{ log.cat }}</text></view>
+            <view class="br-meta-row"><text class="br-meta-k">{{ t('detail_tag') }}</text><text class="br-meta-v">{{ log.tag }}</text></view>
+            <view class="br-meta-row"><text class="br-meta-k">{{ t('detail_page') }}</text><text class="br-meta-v">{{ log.page }}</text></view>
+            <view class="br-meta-row"><text class="br-meta-k">{{ t('detail_time') }}</text><text class="br-meta-v">{{ log.time }}</text></view>
+            <view class="br-meta-row" v-if="log.extra"><text class="br-meta-k">{{ t('detail_data') }}</text><text class="br-meta-v br-meta-code">{{ fmtExtra(log.extra) }}</text></view>
           </view>
           <view class="br-msg-full" v-if="log.msg"><text>{{ log.msg }}</text></view>
           <view class="br-stack" v-if="log.stack">
-            <text class="br-stack-hd">Stack Trace</text>
+            <text class="br-stack-hd">{{ t('stack_trace') }}</text>
             <view class="br-stack-pre"><text>{{ log.stack }}</text></view>
           </view>
         </view>
       </view>
 
       <view class="br-empty" v-if="filtered.length === 0">
-        <text>{{ tab === 1 ? 'No errors.' : tab === 2 ? 'No warnings.' : 'No logs.' }}</text>
+        <text>{{ tab === 1 ? t('empty_errors') : tab === 2 ? t('empty_warnings') : t('empty_all') }}</text>
       </view>
     </scroll-view>
 
     <!-- Status bar -->
     <view class="br-status">
-      <text>{{ allLogs.length }} logs</text>
+      <text>{{ allLogs.length }} {{ t('status_logs') }}</text>
       <text>|</text>
-      <text>{{ fmtDur(stats.sessionMs) }} uptime</text>
+      <text>{{ t('status_uptime') }} {{ fmtDur(stats.sessionMs) }}</text>
       <text>|</text>
       <text>{{ stats.device ? stats.device.model : '' }}</text>
       <view class="br-status-r">
-        <view class="br-btn br-btn-sm" @tap="doExport('text')"><text>copy text</text></view>
-        <view class="br-btn br-btn-sm" @tap="doExport('json')"><text>copy json</text></view>
-        <view class="br-btn br-btn-sm br-btn-d" @tap="doClear"><text>clear</text></view>
+        <view class="br-btn br-btn-sm" @tap="doExport('text')"><text>{{ t('btn_copy_text') }}</text></view>
+        <view class="br-btn br-btn-sm" @tap="doExport('json')"><text>{{ t('btn_copy_json') }}</text></view>
+        <view class="br-btn br-btn-sm br-btn-d" @tap="doClear"><text>{{ t('btn_clear') }}</text></view>
       </view>
     </view>
 
     <!-- Export overlay -->
     <view class="br-overlay" v-if="showExport" @tap="showExport=false">
       <view class="br-overlay-box" @tap.stop>
-        <text class="br-overlay-hd">Export Logs</text>
+        <text class="br-overlay-hd">{{ t('export_title') }}</text>
         <view class="br-overlay-opt" @tap="doExport('text')">
-          <text class="br-overlay-label">Text format</text>
-          <text class="br-overlay-desc">Human-readable, suitable for pasting</text>
+          <text class="br-overlay-label">{{ t('export_text_label') }}</text>
+          <text class="br-overlay-desc">{{ t('export_text_desc') }}</text>
         </view>
         <view class="br-overlay-opt" @tap="doExport('json')">
-          <text class="br-overlay-label">JSON format</text>
-          <text class="br-overlay-desc">Structured data for program analysis</text>
+          <text class="br-overlay-label">{{ t('export_json_label') }}</text>
+          <text class="br-overlay-desc">{{ t('export_json_desc') }}</text>
         </view>
         <view class="br-overlay-opt" @tap="doExport('csv')">
-          <text class="br-overlay-label">CSV format</text>
-          <text class="br-overlay-desc">Spreadsheet-compatible table</text>
+          <text class="br-overlay-label">{{ t('export_csv_label') }}</text>
+          <text class="br-overlay-desc">{{ t('export_csv_desc') }}</text>
         </view>
-        <view class="br-overlay-cancel" @tap="showExport=false"><text>Cancel</text></view>
+        <view class="br-overlay-cancel" @tap="showExport=false"><text>{{ t('export_cancel') }}</text></view>
       </view>
     </view>
   </view>
 </template>
 
 <script>
-// BugReport Log Viewer — uni-app Common Version
+// BugReport Log Viewer — uni-app Common Version (i18n: zh-CN / en)
 // Works on: H5 / WeChat Mini Program / Android APP-PLUS / iOS APP-PLUS
-// Usage: <BugReportViewer :bridge="BR" />
-//        Falls back to window.BugReport or uni global
+
+// ---- i18n ----
+var T = {
+  zh: {
+    status_ok: '正常', status_issues: '个问题',
+    btn_pause: '|| 暂停', btn_live: '> 实时',
+    btn_export: '导出', btn_filter: '筛选', btn_close: '关闭',
+    tab_all: '全部', tab_errors: '错误', tab_warnings: '警告',
+    tab_network: '网络', tab_perf: '性能', tab_crash: '崩溃',
+    search_placeholder: '搜索：标签、消息、页面、分类...',
+    detail_id: 'ID', detail_level: '级别', detail_category: '分类',
+    detail_tag: '标签', detail_page: '页面', detail_time: '时间', detail_data: '数据',
+    stack_trace: '堆栈追踪',
+    empty_errors: '暂无错误。', empty_warnings: '暂无警告。', empty_all: '暂无日志。',
+    status_logs: '条日志', status_uptime: '运行时长',
+    btn_copy_text: '复制文本', btn_copy_json: '复制JSON', btn_clear: '清空',
+    export_title: '导出日志',
+    export_text_label: '文本格式', export_text_desc: '可读文本，适合粘贴分享',
+    export_json_label: 'JSON格式', export_json_desc: '结构化数据，适合程序分析',
+    export_csv_label: 'CSV格式', export_csv_desc: '电子表格兼容格式',
+    export_cancel: '取消',
+    copied: '已复制到剪贴板', copy_failed: '复制失败',
+    dialog_clear_title: '清空日志', dialog_clear_content: '确定清空所有日志吗？'
+  },
+  en: {
+    status_ok: 'OK', status_issues: 'issues',
+    btn_pause: '|| pause', btn_live: '> live',
+    btn_export: 'export', btn_filter: 'filter', btn_close: 'close',
+    tab_all: 'all', tab_errors: 'errors', tab_warnings: 'warnings',
+    tab_network: 'network', tab_perf: 'perf', tab_crash: 'crash',
+    search_placeholder: 'filter: tag, message, page, category...',
+    detail_id: 'ID', detail_level: 'Level', detail_category: 'Category',
+    detail_tag: 'Tag', detail_page: 'Page', detail_time: 'Time', detail_data: 'Data',
+    stack_trace: 'Stack Trace',
+    empty_errors: 'No errors.', empty_warnings: 'No warnings.', empty_all: 'No logs.',
+    status_logs: 'logs', status_uptime: 'uptime',
+    btn_copy_text: 'copy text', btn_copy_json: 'copy json', btn_clear: 'clear',
+    export_title: 'Export Logs',
+    export_text_label: 'Text format', export_text_desc: 'Human-readable, suitable for pasting',
+    export_json_label: 'JSON format', export_json_desc: 'Structured data for program analysis',
+    export_csv_label: 'CSV format', export_csv_desc: 'Spreadsheet-compatible table',
+    export_cancel: 'Cancel',
+    copied: 'Copied to clipboard', copy_failed: 'Copy failed',
+    dialog_clear_title: 'Clear Logs', dialog_clear_content: 'Clear all logs?'
+  }
+}
 
 export default {
   name: 'BugReportViewer',
@@ -172,7 +216,8 @@ export default {
       netCount: 0,
       perfCount: 0,
       crashCount: 0,
-      stats: { sessionMs: 0, device: {} }
+      stats: { sessionMs: 0, device: {} },
+      lang: 'en'
     }
   },
   computed: {
@@ -198,12 +243,25 @@ export default {
     }
   },
   methods: {
+    t(key) { return (T[this.lang] || T.en)[key] || key },
+    detectLang() {
+      var loc = ''
+      // #ifdef APP-PLUS
+      try { var i = uni.getSystemInfoSync(); if (i && i.language) loc = i.language } catch(e) {}
+      // #endif
+      // #ifdef MP-WEIXIN
+      try { var w = wx.getSystemInfoSync(); if (w && w.language) loc = w.language } catch(e) {}
+      // #endif
+      // #ifdef H5
+      loc = (typeof navigator !== 'undefined' && navigator.language) || ''
+      // #endif
+      this.lang = String(loc).toLowerCase().startsWith('zh') ? 'zh' : 'en'
+    },
     getBR() {
       if (this.bridge) return this.bridge
       // #ifdef APP-PLUS
-      // Try global (UMD sets globalThis.BugReport), then ESM import, then require
       if (typeof globalThis !== 'undefined' && globalThis.BugReport) return globalThis.BugReport
-      try { return require('@/utils/bug-report.js') } catch(e) { /* fall through */ }
+      try { return require('@/utils/bug-report.js') } catch(e) {}
       // #endif
       // #ifdef H5
       if (typeof window !== 'undefined' && window.BugReport) return window.BugReport
@@ -241,38 +299,38 @@ export default {
       const BR = this.getBR()
       if (!BR) return
       const text = BR.exportLogs(format)
+      const vm = this
       // #ifdef H5
       if (typeof navigator !== 'undefined' && navigator.clipboard) {
-        navigator.clipboard.writeText(text).then(() => alert('Copied to clipboard'))
+        navigator.clipboard.writeText(text).then(function() { alert(vm.t('copied')) })
       }
       // #endif
       // #ifndef H5
-      // uni-app / WeChat — use platform clipboard
       // #ifdef MP-WEIXIN
       if (typeof wx !== 'undefined' && wx.setClipboardData) {
-        wx.setClipboardData({ data: text, success() { wx.showToast({ title: 'Copied' }) } })
+        wx.setClipboardData({ data: text, success: function() { wx.showToast({ title: vm.t('copied') }) } })
         return
       }
       // #endif
       uni.setClipboardData({
         data: text,
-        success() { uni.showToast({ title: 'Copied', icon: 'none' }) },
-        fail() { uni.showToast({ title: 'Copy failed', icon: 'none' }) }
+        success: function() { uni.showToast({ title: vm.t('copied'), icon: 'none' }) },
+        fail: function() { uni.showToast({ title: vm.t('copy_failed'), icon: 'none' }) }
       })
       // #endif
     },
     doClear() {
+      var vm = this
       // #ifdef H5
-      if (!confirm('Clear all logs?')) return
+      if (!confirm(vm.t('dialog_clear_content'))) return
       // #endif
       // #ifndef H5
-      const that = this
       uni.showModal({
-        title: 'Clear Logs',
-        content: 'Clear all logs?',
-        success(res) {
+        title: vm.t('dialog_clear_title'),
+        content: vm.t('dialog_clear_content'),
+        success: function(res) {
           if (!res.confirm) return
-          that._doClear()
+          vm._doClear()
         }
       })
       return
@@ -286,11 +344,13 @@ export default {
     }
   },
   mounted() {
+    this.detectLang()
     this.refresh()
     const BR = this.getBR()
     if (BR) {
-      this._unwatch = BR.watch(() => {
-        if (this.autoRefresh) this.refresh()
+      var vm = this
+      this._unwatch = BR.watch(function() {
+        if (vm.autoRefresh) vm.refresh()
       })
     }
   },

@@ -4,4 +4,18 @@
 4
 5    <uses-sdk android:minSdkVersion="21" />
 6
-7</manifest>
+7    <application>
+7-->D:\wanjie\Bug-Report-Skill\android\src\main\AndroidManifest.xml:4:5-10:19
+8        <activity
+8-->D:\wanjie\Bug-Report-Skill\android\src\main\AndroidManifest.xml:5:9-9:75
+9            android:name="com.bugreport.viewer.LogViewerActivity"
+9-->D:\wanjie\Bug-Report-Skill\android\src\main\AndroidManifest.xml:6:13-66
+10            android:exported="false"
+10-->D:\wanjie\Bug-Report-Skill\android\src\main\AndroidManifest.xml:7:13-37
+11            android:label="BugReport Logs"
+11-->D:\wanjie\Bug-Report-Skill\android\src\main\AndroidManifest.xml:8:13-43
+12            android:theme="@style/Theme.AppCompat.DayNight.NoActionBar" />
+12-->D:\wanjie\Bug-Report-Skill\android\src\main\AndroidManifest.xml:9:13-72
+13    </application>
+14
+15</manifest>

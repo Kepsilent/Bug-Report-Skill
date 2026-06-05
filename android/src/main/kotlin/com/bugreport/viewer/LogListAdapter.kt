@@ -15,13 +15,18 @@ import java.util.Date
 import java.util.Locale
 
 /**
- * RecyclerView adapter for log entries — dark terminal theme.
+ * RecyclerView adapter for log entries — dark terminal theme, auto i18n.
  */
-class LogListAdapter(private val onClick: (LogEntry) -> Unit) : RecyclerView.Adapter<LogListAdapter.ViewHolder>() {
+class LogListAdapter(
+    private val isZh: Boolean,
+    private val onClick: (LogEntry) -> Unit
+) : RecyclerView.Adapter<LogListAdapter.ViewHolder>() {
 
     private var logs = listOf<LogEntry>()
     private val expandedIds = mutableSetOf<Long>()
     private val timeFormat = SimpleDateFormat("HH:mm:ss.SSS", Locale.US)
+
+    private fun t(zh: String, en: String): String = if (isZh) zh else en
 
     fun submitList(newLogs: List<LogEntry>) {
         val diff = DiffUtil.calculateDiff(LogDiffCallback(logs, newLogs))
@@ -57,15 +62,16 @@ class LogListAdapter(private val onClick: (LogEntry) -> Unit) : RecyclerView.Ada
         if (expanded) {
             holder.detailView.visibility = View.VISIBLE
             holder.metaText.text = buildString {
-                appendLine("ID: ${log.id}")
-                appendLine("Level: ${log.levelLabel}")
-                appendLine("Category: ${log.cat}")
-                appendLine("Tag: ${log.tag}")
-                appendLine("Page: ${log.page}")
-                appendLine("Time: ${log.time}")
+                appendLine("${t("ID", "ID")}: ${log.id}")
+                appendLine("${t("级别", "Level")}: ${log.levelLabel}")
+                appendLine("${t("分类", "Category")}: ${log.cat}")
+                appendLine("${t("标签", "Tag")}: ${log.tag}")
+                appendLine("${t("页面", "Page")}: ${log.page}")
+                appendLine("${t("时间", "Time")}: ${log.time}")
             }
             holder.stackText.visibility = if (!log.stack.isNullOrEmpty()) View.VISIBLE else View.GONE
             holder.stackText.text = log.stack
+            holder.stackHeader.text = t("堆栈追踪", "Stack Trace")
         } else {
             holder.detailView.visibility = View.GONE
         }
@@ -104,6 +110,7 @@ class LogListAdapter(private val onClick: (LogEntry) -> Unit) : RecyclerView.Ada
         val chevron: TextView = view.findViewById(R.id.log_chevron)
         val detailView: View = view.findViewById(R.id.log_detail)
         val metaText: TextView = view.findViewById(R.id.log_meta)
+        val stackHeader: TextView = view.findViewById(R.id.log_stack_header)
         val stackText: TextView = view.findViewById(R.id.log_stack)
     }
 

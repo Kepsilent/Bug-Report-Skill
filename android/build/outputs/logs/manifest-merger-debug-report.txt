@@ -1,16 +1,28 @@
 -- Merging decision tree log ---
 manifest
-ADDED from D:\wanjie\Bug-Report-Skill\android\build\intermediates\tmp\ProcessLibraryManifest\debug\tempAndroidManifest11299708534172687340.xml:2:13-83
-INJECTED from D:\wanjie\Bug-Report-Skill\android\build\intermediates\tmp\ProcessLibraryManifest\debug\tempAndroidManifest11299708534172687340.xml:2:13-83
+ADDED from D:\wanjie\Bug-Report-Skill\android\src\main\AndroidManifest.xml:2:1-12:12
+INJECTED from D:\wanjie\Bug-Report-Skill\android\src\main\AndroidManifest.xml:2:1-12:12
 	package
-		INJECTED from D:\wanjie\Bug-Report-Skill\android\build\intermediates\tmp\ProcessLibraryManifest\debug\tempAndroidManifest11299708534172687340.xml
+		INJECTED from D:\wanjie\Bug-Report-Skill\android\src\main\AndroidManifest.xml
 	xmlns:android
-		ADDED from D:\wanjie\Bug-Report-Skill\android\build\intermediates\tmp\ProcessLibraryManifest\debug\tempAndroidManifest11299708534172687340.xml:2:23-81
+		ADDED from D:\wanjie\Bug-Report-Skill\android\src\main\AndroidManifest.xml:2:11-69
+application
+ADDED from D:\wanjie\Bug-Report-Skill\android\src\main\AndroidManifest.xml:4:5-10:19
+activity#com.bugreport.viewer.LogViewerActivity
+ADDED from D:\wanjie\Bug-Report-Skill\android\src\main\AndroidManifest.xml:5:9-9:75
+	android:label
+		ADDED from D:\wanjie\Bug-Report-Skill\android\src\main\AndroidManifest.xml:8:13-43
+	android:exported
+		ADDED from D:\wanjie\Bug-Report-Skill\android\src\main\AndroidManifest.xml:7:13-37
+	android:theme
+		ADDED from D:\wanjie\Bug-Report-Skill\android\src\main\AndroidManifest.xml:9:13-72
+	android:name
+		ADDED from D:\wanjie\Bug-Report-Skill\android\src\main\AndroidManifest.xml:6:13-66
 uses-sdk
-INJECTED from D:\wanjie\Bug-Report-Skill\android\build\intermediates\tmp\ProcessLibraryManifest\debug\tempAndroidManifest11299708534172687340.xml reason: use-sdk injection requested
-INJECTED from D:\wanjie\Bug-Report-Skill\android\build\intermediates\tmp\ProcessLibraryManifest\debug\tempAndroidManifest11299708534172687340.xml
-INJECTED from D:\wanjie\Bug-Report-Skill\android\build\intermediates\tmp\ProcessLibraryManifest\debug\tempAndroidManifest11299708534172687340.xml
+INJECTED from D:\wanjie\Bug-Report-Skill\android\src\main\AndroidManifest.xml reason: use-sdk injection requested
+INJECTED from D:\wanjie\Bug-Report-Skill\android\src\main\AndroidManifest.xml
+INJECTED from D:\wanjie\Bug-Report-Skill\android\src\main\AndroidManifest.xml
 	android:targetSdkVersion
-		INJECTED from D:\wanjie\Bug-Report-Skill\android\build\intermediates\tmp\ProcessLibraryManifest\debug\tempAndroidManifest11299708534172687340.xml
+		INJECTED from D:\wanjie\Bug-Report-Skill\android\src\main\AndroidManifest.xml
 	android:minSdkVersion
-		INJECTED from D:\wanjie\Bug-Report-Skill\android\build\intermediates\tmp\ProcessLibraryManifest\debug\tempAndroidManifest11299708534172687340.xml
+		INJECTED from D:\wanjie\Bug-Report-Skill\android\src\main\AndroidManifest.xml

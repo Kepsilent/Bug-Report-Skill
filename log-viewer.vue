@@ -5,14 +5,14 @@
       <div class="br-tb-left">
         <span class="br-tb-title">BugReport</span>
         <span :class="['br-dot', errCount > 0 ? 'br-dot-err' : 'br-dot-ok']"></span>
-        <span class="br-tb-stat">{{ errCount > 0 ? errCount + ' issues' : 'OK' }}</span>
+        <span class="br-tb-stat">{{ errCount > 0 ? errCount + ' ' + t('status_issues') : t('status_ok') }}</span>
       </div>
       <div class="br-tb-right">
         <button class="br-btn" @click="autoRefresh = !autoRefresh">
-          {{ autoRefresh ? '|| pause' : '> live' }}
+          {{ autoRefresh ? t('btn_pause') : t('btn_live') }}
         </button>
-        <button class="br-btn" @click="showExport = !showExport">export</button>
-        <button class="br-btn" @click="showSearch = !showSearch">filter</button>
+        <button class="br-btn" @click="showExport = !showExport">{{ t('btn_export') }}</button>
+        <button class="br-btn" @click="showSearch = !showSearch">{{ t('btn_filter') }}</button>
       </div>
     </div>
 
@@ -30,30 +30,30 @@
       <input
         class="br-input"
         v-model="searchText"
-        placeholder="filter: tag, message, page, category..."
+        :placeholder="t('search_placeholder')"
       />
-      <button class="br-btn br-btn-sm" @click="searchText=''; showSearch=false">close</button>
+      <button class="br-btn br-btn-sm" @click="searchText=''; showSearch=false">{{ t('btn_close') }}</button>
     </div>
 
     <!-- Tabs -->
     <div class="br-tabs">
       <span :class="['br-tab', { on: tab===0 }]" @click="tab=0">
-        all<span class="br-badge" v-if="allLogs.length">{{ allLogs.length }}</span>
+        {{ t('tab_all') }}<span class="br-badge" v-if="allLogs.length">{{ allLogs.length }}</span>
       </span>
       <span :class="['br-tab br-tab-e', { on: tab===1 }]" @click="tab=1">
-        errors<span class="br-badge br-badge-e" v-if="errCount">{{ errCount }}</span>
+        {{ t('tab_errors') }}<span class="br-badge br-badge-e" v-if="errCount">{{ errCount }}</span>
       </span>
       <span :class="['br-tab br-tab-w', { on: tab===2 }]" @click="tab=2">
-        warnings<span class="br-badge br-badge-w" v-if="wrnCount">{{ wrnCount }}</span>
+        {{ t('tab_warnings') }}<span class="br-badge br-badge-w" v-if="wrnCount">{{ wrnCount }}</span>
       </span>
       <span :class="['br-tab', { on: tab===3 }]" @click="tab=3">
-        network<span class="br-badge" v-if="netCount">{{ netCount }}</span>
+        {{ t('tab_network') }}<span class="br-badge" v-if="netCount">{{ netCount }}</span>
       </span>
       <span :class="['br-tab', { on: tab===4 }]" @click="tab=4">
-        perf<span class="br-badge" v-if="perfCount">{{ perfCount }}</span>
+        {{ t('tab_perf') }}<span class="br-badge" v-if="perfCount">{{ perfCount }}</span>
       </span>
       <span :class="['br-tab', { on: tab===5 }]" @click="tab=5">
-        crash<span class="br-badge br-badge-e" v-if="crashCount">{{ crashCount }}</span>
+        {{ t('tab_crash') }}<span class="br-badge br-badge-e" v-if="crashCount">{{ crashCount }}</span>
       </span>
     </div>
 
@@ -78,66 +78,110 @@
         <!-- Expanded detail -->
         <div class="br-detail" v-if="expand === log.id">
           <table class="br-meta">
-            <tr><td class="br-meta-k">ID</td><td>{{ log.id }}</td></tr>
-            <tr><td class="br-meta-k">Level</td><td>{{ log.tagN }}</td></tr>
-            <tr><td class="br-meta-k">Category</td><td>{{ log.cat }}</td></tr>
-            <tr><td class="br-meta-k">Tag</td><td>{{ log.tag }}</td></tr>
-            <tr><td class="br-meta-k">Page</td><td>{{ log.page }}</td></tr>
-            <tr><td class="br-meta-k">Time</td><td>{{ log.time }}</td></tr>
-            <tr v-if="log.extra"><td class="br-meta-k">Data</td><td><code>{{ fmtExtra(log.extra) }}</code></td></tr>
+            <tr><td class="br-meta-k">{{ t('detail_id') }}</td><td>{{ log.id }}</td></tr>
+            <tr><td class="br-meta-k">{{ t('detail_level') }}</td><td>{{ log.tagN }}</td></tr>
+            <tr><td class="br-meta-k">{{ t('detail_category') }}</td><td>{{ log.cat }}</td></tr>
+            <tr><td class="br-meta-k">{{ t('detail_tag') }}</td><td>{{ log.tag }}</td></tr>
+            <tr><td class="br-meta-k">{{ t('detail_page') }}</td><td>{{ log.page }}</td></tr>
+            <tr><td class="br-meta-k">{{ t('detail_time') }}</td><td>{{ log.time }}</td></tr>
+            <tr v-if="log.extra"><td class="br-meta-k">{{ t('detail_data') }}</td><td><code>{{ fmtExtra(log.extra) }}</code></td></tr>
           </table>
           <div class="br-msg-full" v-if="log.msg">{{ log.msg }}</div>
           <div class="br-stack" v-if="log.stack">
-            <div class="br-stack-hd">Stack Trace</div>
+            <div class="br-stack-hd">{{ t('stack_trace') }}</div>
             <pre class="br-stack-pre">{{ log.stack }}</pre>
           </div>
         </div>
       </div>
 
       <div class="br-empty" v-if="filtered.length === 0">
-        {{ tab === 1 ? 'No errors.' : tab === 2 ? 'No warnings.' : 'No logs.' }}
+        {{ tab === 1 ? t('empty_errors') : tab === 2 ? t('empty_warnings') : t('empty_all') }}
       </div>
     </div>
 
     <!-- Status bar -->
     <div class="br-status">
-      <span>{{ allLogs.length }} logs</span>
+      <span>{{ allLogs.length }} {{ t('status_logs') }}</span>
       <span>|</span>
-      <span>{{ fmtDur(stats.sessionMs) }} uptime</span>
+      <span>{{ t('status_uptime') }} {{ fmtDur(stats.sessionMs) }}</span>
       <span>|</span>
       <span>{{ stats.device ? stats.device.model : '' }}</span>
       <span class="br-status-r">
-        <button class="br-btn br-btn-sm" @click="doExport('text')">copy text</button>
-        <button class="br-btn br-btn-sm" @click="doExport('json')">copy json</button>
-        <button class="br-btn br-btn-sm br-btn-d" @click="doClear">clear</button>
+        <button class="br-btn br-btn-sm" @click="doExport('text')">{{ t('btn_copy_text') }}</button>
+        <button class="br-btn br-btn-sm" @click="doExport('json')">{{ t('btn_copy_json') }}</button>
+        <button class="br-btn br-btn-sm br-btn-d" @click="doClear">{{ t('btn_clear') }}</button>
       </span>
     </div>
 
     <!-- Export overlay -->
     <div class="br-overlay" v-if="showExport" @click="showExport=false">
       <div class="br-overlay-box" @click.stop>
-        <div class="br-overlay-hd">Export Logs</div>
+        <div class="br-overlay-hd">{{ t('export_title') }}</div>
         <div class="br-overlay-opt" @click="doExport('text')">
-          <span class="br-overlay-label">Text format</span>
-          <span class="br-overlay-desc">Human-readable, suitable for pasting</span>
+          <span class="br-overlay-label">{{ t('export_text_label') }}</span>
+          <span class="br-overlay-desc">{{ t('export_text_desc') }}</span>
         </div>
         <div class="br-overlay-opt" @click="doExport('json')">
-          <span class="br-overlay-label">JSON format</span>
-          <span class="br-overlay-desc">Structured data for program analysis</span>
+          <span class="br-overlay-label">{{ t('export_json_label') }}</span>
+          <span class="br-overlay-desc">{{ t('export_json_desc') }}</span>
         </div>
         <div class="br-overlay-opt" @click="doExport('csv')">
-          <span class="br-overlay-label">CSV format</span>
-          <span class="br-overlay-desc">Spreadsheet-compatible table</span>
+          <span class="br-overlay-label">{{ t('export_csv_label') }}</span>
+          <span class="br-overlay-desc">{{ t('export_csv_desc') }}</span>
         </div>
-        <div class="br-overlay-cancel" @click="showExport=false">Cancel</div>
+        <div class="br-overlay-cancel" @click="showExport=false">{{ t('export_cancel') }}</div>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-// ---- Props ----
-// bridge: optional, a BugReport instance. If not provided, imports from '../index.js'
+// BugReport Log Viewer — H5/Web version (i18n: zh-CN / en)
+
+var T = {
+  zh: {
+    status_ok: '正常', status_issues: '个问题',
+    btn_pause: '|| 暂停', btn_live: '> 实时',
+    btn_export: '导出', btn_filter: '筛选', btn_close: '关闭',
+    tab_all: '全部', tab_errors: '错误', tab_warnings: '警告',
+    tab_network: '网络', tab_perf: '性能', tab_crash: '崩溃',
+    search_placeholder: '搜索：标签、消息、页面、分类...',
+    detail_id: 'ID', detail_level: '级别', detail_category: '分类',
+    detail_tag: '标签', detail_page: '页面', detail_time: '时间', detail_data: '数据',
+    stack_trace: '堆栈追踪',
+    empty_errors: '暂无错误。', empty_warnings: '暂无警告。', empty_all: '暂无日志。',
+    status_logs: '条日志', status_uptime: '运行时长',
+    btn_copy_text: '复制文本', btn_copy_json: '复制JSON', btn_clear: '清空',
+    export_title: '导出日志',
+    export_text_label: '文本格式', export_text_desc: '可读文本，适合粘贴分享',
+    export_json_label: 'JSON格式', export_json_desc: '结构化数据，适合程序分析',
+    export_csv_label: 'CSV格式', export_csv_desc: '电子表格兼容格式',
+    export_cancel: '取消',
+    copied: '已复制到剪贴板',
+    dialog_clear_content: '确定清空所有日志吗？'
+  },
+  en: {
+    status_ok: 'OK', status_issues: 'issues',
+    btn_pause: '|| pause', btn_live: '> live',
+    btn_export: 'export', btn_filter: 'filter', btn_close: 'close',
+    tab_all: 'all', tab_errors: 'errors', tab_warnings: 'warnings',
+    tab_network: 'network', tab_perf: 'perf', tab_crash: 'crash',
+    search_placeholder: 'filter: tag, message, page, category...',
+    detail_id: 'ID', detail_level: 'Level', detail_category: 'Category',
+    detail_tag: 'Tag', detail_page: 'Page', detail_time: 'Time', detail_data: 'Data',
+    stack_trace: 'Stack Trace',
+    empty_errors: 'No errors.', empty_warnings: 'No warnings.', empty_all: 'No logs.',
+    status_logs: 'logs', status_uptime: 'uptime',
+    btn_copy_text: 'copy text', btn_copy_json: 'copy json', btn_clear: 'clear',
+    export_title: 'Export Logs',
+    export_text_label: 'Text format', export_text_desc: 'Human-readable, suitable for pasting',
+    export_json_label: 'JSON format', export_json_desc: 'Structured data for program analysis',
+    export_csv_label: 'CSV format', export_csv_desc: 'Spreadsheet-compatible table',
+    export_cancel: 'Cancel',
+    copied: 'Copied to clipboard',
+    dialog_clear_content: 'Clear all logs?'
+  }
+}
 
 export default {
   name: 'BugReportViewer',
@@ -158,7 +202,8 @@ export default {
       netCount: 0,
       perfCount: 0,
       crashCount: 0,
-      stats: { sessionMs: 0, device: {} }
+      stats: { sessionMs: 0, device: {} },
+      lang: 'en'
     }
   },
   computed: {
@@ -184,6 +229,11 @@ export default {
     }
   },
   methods: {
+    t(key) { return (T[this.lang] || T.en)[key] || key },
+    detectLang() {
+      var loc = (typeof navigator !== 'undefined' && navigator.language) || ''
+      this.lang = String(loc).toLowerCase().startsWith('zh') ? 'zh' : 'en'
+    },
     getBR() {
       return this.bridge || (typeof window !== 'undefined' && window.BugReport) || null
     },
@@ -218,18 +268,20 @@ export default {
       const BR = this.getBR()
       if (!BR) return
       const text = BR.exportLogs(format)
+      var vm = this
       if (typeof navigator !== 'undefined' && navigator.clipboard) {
-        navigator.clipboard.writeText(text).then(() => alert('Copied to clipboard'))
+        navigator.clipboard.writeText(text).then(function() { alert(vm.t('copied')) })
       }
     },
     doClear() {
-      if (!confirm('Clear all logs?')) return
+      if (!confirm(this.t('dialog_clear_content'))) return
       const BR = this.getBR()
       if (BR) BR.clear()
       this.refresh()
     }
   },
   mounted() {
+    this.detectLang()
     this.refresh()
     const BR = this.getBR()
     if (BR) {

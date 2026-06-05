@@ -4,4 +4,12 @@
 
     <uses-sdk android:minSdkVersion="21" />
 
+    <application>
+        <activity
+            android:name="com.bugreport.viewer.LogViewerActivity"
+            android:exported="false"
+            android:label="BugReport Logs"
+            android:theme="@style/Theme.AppCompat.DayNight.NoActionBar" />
+    </application>
+
 </manifest>

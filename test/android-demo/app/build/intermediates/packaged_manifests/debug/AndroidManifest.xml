@@ -34,6 +34,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name="com.bugreport.viewer.LogViewerActivity"
+            android:exported="false"
+            android:label="BugReport Logs"
+            android:theme="@style/Theme.AppCompat.DayNight.NoActionBar" />
 
         <provider
             android:name="androidx.startup.InitializationProvider"

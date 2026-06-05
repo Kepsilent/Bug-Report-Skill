@@ -4,7 +4,7 @@ ADDED from D:\wanjie\Bug-Report-Skill\test\android-demo\app\src\main\AndroidMani
 INJECTED from D:\wanjie\Bug-Report-Skill\test\android-demo\app\src\main\AndroidManifest.xml:2:1-18:12
 INJECTED from D:\wanjie\Bug-Report-Skill\test\android-demo\app\src\main\AndroidManifest.xml:2:1-18:12
 INJECTED from D:\wanjie\Bug-Report-Skill\test\android-demo\app\src\main\AndroidManifest.xml:2:1-18:12
-MERGED from [:bugreport] D:\wanjie\Bug-Report-Skill\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:2:1-7:12
+MERGED from [:bugreport] D:\wanjie\Bug-Report-Skill\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:2:1-15:12
 MERGED from [com.google.android.material:material:1.11.0] C:\Users\万涛\.gradle\caches\transforms-3\8f233cd207c72d15e2cbf7d39024ac77\transformed\material-1.11.0\AndroidManifest.xml:17:1-24:12
 MERGED from [androidx.appcompat:appcompat-resources:1.6.1] C:\Users\万涛\.gradle\caches\transforms-3\df37f88b85fc3393db7266b3893e0805\transformed\appcompat-resources-1.6.1\AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.constraintlayout:constraintlayout:2.0.1] C:\Users\万涛\.gradle\caches\transforms-3\5b7a1eae72d4945b42c660c6b907993b\transformed\constraintlayout-2.0.1\AndroidManifest.xml:2:1-11:12
@@ -62,6 +62,8 @@ ADDED from D:\wanjie\Bug-Report-Skill\test\android-demo\app\src\main\AndroidMani
 application
 ADDED from D:\wanjie\Bug-Report-Skill\test\android-demo\app\src\main\AndroidManifest.xml:4:5-17:19
 INJECTED from D:\wanjie\Bug-Report-Skill\test\android-demo\app\src\main\AndroidManifest.xml:4:5-17:19
+MERGED from [:bugreport] D:\wanjie\Bug-Report-Skill\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:7:5-13:19
+MERGED from [:bugreport] D:\wanjie\Bug-Report-Skill\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:7:5-13:19
 MERGED from [com.google.android.material:material:1.11.0] C:\Users\万涛\.gradle\caches\transforms-3\8f233cd207c72d15e2cbf7d39024ac77\transformed\material-1.11.0\AndroidManifest.xml:22:5-20
 MERGED from [com.google.android.material:material:1.11.0] C:\Users\万涛\.gradle\caches\transforms-3\8f233cd207c72d15e2cbf7d39024ac77\transformed\material-1.11.0\AndroidManifest.xml:22:5-20
 MERGED from [androidx.constraintlayout:constraintlayout:2.0.1] C:\Users\万涛\.gradle\caches\transforms-3\5b7a1eae72d4945b42c660c6b907993b\transformed\constraintlayout-2.0.1\AndroidManifest.xml:9:5-20
@@ -200,6 +202,16 @@ MERGED from [androidx.print:print:1.0.0] C:\Users\万涛\.gradle\caches\transfor
 		INJECTED from D:\wanjie\Bug-Report-Skill\test\android-demo\app\src\main\AndroidManifest.xml
 	android:minSdkVersion
 		INJECTED from D:\wanjie\Bug-Report-Skill\test\android-demo\app\src\main\AndroidManifest.xml
+activity#com.bugreport.viewer.LogViewerActivity
+ADDED from [:bugreport] D:\wanjie\Bug-Report-Skill\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:8:9-12:75
+	android:label
+		ADDED from [:bugreport] D:\wanjie\Bug-Report-Skill\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:11:13-43
+	android:exported
+		ADDED from [:bugreport] D:\wanjie\Bug-Report-Skill\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:10:13-37
+	android:theme
+		ADDED from [:bugreport] D:\wanjie\Bug-Report-Skill\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:12:13-72
+	android:name
+		ADDED from [:bugreport] D:\wanjie\Bug-Report-Skill\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:9:13-66
 provider#androidx.startup.InitializationProvider
 ADDED from [androidx.emoji2:emoji2:1.2.0] C:\Users\万涛\.gradle\caches\transforms-3\0ddb9c379c67fcbab722e7078f3a6911\transformed\emoji2-1.2.0\AndroidManifest.xml:24:9-32:20
 MERGED from [androidx.lifecycle:lifecycle-process:2.6.1] C:\Users\万涛\.gradle\caches\transforms-3\037feae25c324ecdb793b0bcf7c2dfa3\transformed\lifecycle-process-2.6.1\AndroidManifest.xml:24:9-32:20
