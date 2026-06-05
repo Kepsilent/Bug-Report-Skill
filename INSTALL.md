@@ -9,6 +9,116 @@
 
 ---
 
+## Step -1: 检测旧版并清理（⭐ 必须先执行）
+
+**重装场景**：用户可能之前装过旧版 BugReport。必须先清理旧文件，否则新旧文件混在一起会导致：
+- 旧版 UMD wrapper 与新版冲突 → 白屏
+- 旧版 `log-viewer.vue` 残留 → 路径 404
+- 旧版 `pages.json` 中路径与新文件名不匹配
+- import 路径指向旧文件但旧文件已改名
+
+### -1.1 扫描旧版痕迹（按平台）
+
+**uni-app / HBuilderX 项目：**
+```bash
+# 搜索旧版文件
+find . -type f \( -name "bug-report.js" -o -name "bug-report-app.js" -o -name "error-logger.js" -o -name "debug-log.vue" -o -name "log-viewer.vue" -o -name "log-viewer-common.vue" \) 2>/dev/null
+# 搜索旧版 import/reference
+grep -r "bug-report\|error-logger\|errorLogger\|bugReport\|log-viewer\|debug-log" --include="*.js" --include="*.vue" --include="*.json" --include="*.ts" . 2>/dev/null | grep -v node_modules | grep -v ".git/"
+```
+
+如果命中任何结果 → 跳到 Step -1.3 执行清理。
+
+**Android Studio 项目：**
+```bash
+# 搜索旧版 module
+grep -r "bugreport\|bug-report" --include="*.kts" --include="*.xml" . 2>/dev/null | grep -v ".gradle/" | grep -v "build/"
+find . -type d -name "bugreport" 2>/dev/null
+```
+
+如果 `settings.gradle.kts` 中有 `include(":bugreport")` 或存在 `bugreport/` 目录 → 跳到 Step -1.3 执行清理。
+
+**微信小程序项目：**
+```bash
+find . -type f \( -name "bug-report.js" -o -name "debug-log.vue" \) 2>/dev/null
+grep -r "bug-report\|BR\." --include="*.js" --include="*.json" . 2>/dev/null
+```
+
+**React Native / Web 项目：**
+```bash
+grep -r "bug-report\|BugReport" --include="*.js" --include="*.ts" --include="*.tsx" --include="*.json" . 2>/dev/null | grep -v node_modules
+find . -type f -name "bug-report.js" 2>/dev/null | grep -v node_modules
+```
+
+### -1.2 判断是否需要清理
+- 找到任何旧版文件 → ✅ 需要清理，进 Step -1.3
+- 找到了 import/reference 但文件已不存在 → ✅ 需要清理残留引用
+- 什么都没找到 → ✅ 全新安装，跳过清理，直接进 Step 0
+
+### -1.3 执行清理（逐平台）
+
+**uni-app 清理清单：**
+```bash
+# 1. 删除旧库文件（不管叫什么名字）
+rm -f src/utils/bug-report.js
+rm -f src/utils/bug-report-app.js
+rm -f src/utils/error-logger.js
+rm -f utils/bug-report.js
+
+# 2. 删除旧 log-viewer 页面（各种可能的路径和名字）
+rm -f src/pages/debug-log.vue
+rm -f src/pages/debug-log/debug-log.vue
+rm -f src/pages/log-viewer.vue
+rm -f src/components/LogViewer.vue
+rm -f pages/debug-log/debug-log.vue
+
+# 3. 清理 App.vue 中的旧 import（用户项目根目录的 App.vue）
+#    删除任何包含 bug-report / error-logger 的 import 行
+#    删除任何旧版 BR.init() / ErrorLogger.init() 调用
+
+# 4. 清理 pages.json 中的旧路由
+#    删除 pages 数组中 path 包含 "debug-log" 或 "log-viewer" 的条目
+
+# 5. 清理 uni-app 条件编译残留（如果有）
+rm -f src/utils/bug-report-app.vue
+```
+
+**Android 清理清单：**
+```bash
+# 1. 从 settings.gradle.kts 中删除 include(":bugreport") 行
+# 2. 从 app/build.gradle.kts 中删除 implementation(project(":bugreport")) 行
+# 3. 删除 bugreport/ 目录
+rm -rf bugreport/
+
+# 4. 从 AndroidManifest.xml 中删除旧 LogViewerActivity 注册
+```
+
+**微信小程序清理清单：**
+```bash
+rm -f utils/bug-report.js
+rm -f pages/debug-log/debug-log.vue
+# 清理 app.js 中的旧 import
+# 清理 app.json 中的旧页面路由
+```
+
+**React Native / Web 清理清单：**
+```bash
+rm -f src/utils/bug-report.js
+rm -f src/bug-report.js
+# 清理 App.tsx / App.jsx 中的旧 import
+```
+
+### -1.4 告知用户
+清理完成后，告诉用户：
+> 检测到旧版 BugReport，已清理：
+> - 删除文件: xxx, xxx
+> - 清理引用: App.vue 中的旧 import、pages.json 中的旧路由
+> 现在开始安装 v2.1 新版...
+
+如果未检测到旧版，直接进入 Step 0，不废话。
+
+---
+
 ## Step 0: 检测项目类型 + 模块系统
 
 先检查用户项目根目录的标识文件：
