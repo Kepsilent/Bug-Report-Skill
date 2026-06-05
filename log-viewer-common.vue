@@ -201,19 +201,16 @@ export default {
   },
   methods: {
     getBR() {
-      // #ifdef APP-PLUS
       if (this.bridge) return this.bridge
-      try { return require('@/utils/bug-report.js') } catch(e) { return null }
+      // #ifdef APP-PLUS
+      // Try global (UMD sets globalThis.BugReport), then ESM import, then require
+      if (typeof globalThis !== 'undefined' && globalThis.BugReport) return globalThis.BugReport
+      try { return require('@/utils/bug-report.js') } catch(e) { /* fall through */ }
       // #endif
       // #ifdef H5
-      if (this.bridge) return this.bridge
       if (typeof window !== 'undefined' && window.BugReport) return window.BugReport
-      return null
       // #endif
-      // #ifdef MP-WEIXIN
-      if (this.bridge) return this.bridge
       return null
-      // #endif
     },
     refresh() {
       const BR = this.getBR()

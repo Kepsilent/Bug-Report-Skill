@@ -13,9 +13,9 @@
 ;(function (root, factory) {
   /* eslint-disable */
   if (typeof define === 'function' && define.amd) { define([], factory) }
-  else if (typeof module === 'object' && module.exports) { module.exports = factory() }
+  else if (typeof module === 'object' && module.exports) { var _exp = factory(); module.exports = _exp; root.BugReport = _exp }
   else { root.BugReport = factory() }
-}(typeof self !== 'undefined' ? self : this, function () {
+}(typeof globalThis !== 'undefined' ? globalThis : (typeof self !== 'undefined' ? self : this), function () {
   'use strict'
 
   // ---- Constants ----

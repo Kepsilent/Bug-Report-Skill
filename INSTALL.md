@@ -61,13 +61,17 @@ cp log-viewer-common.vue 用户项目/src/pages/debug-log.vue
 import BR from '@/utils/bug-report.js'
 ```
 
-在 `onLaunch()` 或 `mounted()` 第一个可执行位置添加：
+在 `onLaunch()` 或 `mounted()` 第一个可执行位置添加（**务必外套 try/catch**，避免 init 失败导致整个 App 白屏）：
 ```js
-BR.init({
-  appName: '替换为App名称',
-  appVersion: '1.0.0',
-  captureNetwork: true  // 自动拦截网络请求
-})
+try {
+  BR.init({
+    appName: '替换为App名称',
+    appVersion: '1.0.0',
+    captureNetwork: true  // 自动拦截网络请求
+  })
+} catch (e) {
+  console.warn('[BugReport] init failed:', e.message || e)
+}
 ```
 
 ### 1.3 修改 pages.json — 注册 log-viewer 页面
@@ -251,11 +255,15 @@ cp SKILL.md ~/.claude/skills/bug-report/
 ### ❌ 安装后 App 白屏
 
 **原因分析：**
-1. **ESM 导入失败** — Vite 项目用了 UMD 版 `index.js`，`import` 失败导致整个模块链断裂
+1. **UMD root 变量为 undefined** — uni-app 的 app-service 环境中 `self` 不存在、严格模式 `this` 为 `undefined`，导致 `root.BugReport = ...` 抛出 `TypeError: Cannot set property 'BugReport' of undefined`
+   - **修复：** 确保 `index.js` / `index.mjs` 的 UMD 包装器使用 `globalThis` 作为最优先兜底（v2.1+ 已内置此修复）
+2. **ESM 导入失败** — Vite 项目用了 UMD 版 `index.js`，`import` 失败导致整个模块链断裂
    - **修复：** 改用 `index.mjs` 重新安装
-2. **双 logger 冲突** — 旧的 `error-logger.js` 和新 `bug-report.js` 两个 `init()` 冲突
+3. **Init 失败导致整个 App 崩溃** — `BR.init()` 抛出异常没有被捕获，导致 App.vue onLaunch 中断
+   - **修复：** `BR.init()` 外套 `try/catch`：`try { BR.init(...) } catch(e) { console.warn(e) }`
+4. **双 logger 冲突** — 旧的 `error-logger.js` 和新 `bug-report.js` 两个 `init()` 冲突
    - **修复：** 删除旧 logger 的 import 和 init 调用，只保留新版
-3. **pages.json 路径错误** — 注册的页面路径跟实际文件位置对不上
+5. **pages.json 路径错误** — 注册的页面路径跟实际文件位置对不上
    - **修复：** 确认 `pages.json` 中的路径与文件实际路径一致
 
 ### ❌ `import BR from ...` 报错
