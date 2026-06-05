@@ -9,15 +9,21 @@
 
 **一套 Skill，通吃所有平台。** 零依赖、一行接入、自动网络拦截、统一暗色终端可视化。
 
-## 一键安装
+## 一键安装（让 Claude Code 帮你装）
 
-**把这个 URL 甩给 Claude Code，它就能自动识别你的项目类型并完成安装：**
+**第 1 步**：把 GitHub 链接发给 Claude Code：
 
 ```
 https://github.com/Kepsilent/Bug-Report-Skill
 ```
 
-你也可以直接说：**"帮我安装 BugReport"** — Claude 会读取 [INSTALL.md](INSTALL.md) 自动执行。
+**第 2 步**：告诉它：
+
+> "帮我安装这个 BugReport 到我的项目"
+
+Claude 会自动读取项目的 [INSTALL.md](INSTALL.md)，识别你的项目类型（uni-app / Android / 小程序 / React Native / Web），然后复制文件、添加初始化代码、注册查看器页面，一条龙搞定。
+
+> 如果你已经装了 Skill，也可以直接说 `/bug-report 安装`，Skill 会读取 INSTALL.md 引导安装。
 
 手动安装请往下看各平台说明 ↓
 

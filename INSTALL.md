@@ -1,6 +1,11 @@
-# INSTALL.md — BugReport 一键安装指南
+# INSTALL.md — Claude Code 安装指令
 
-**甩这个文件给 Claude Code，或直接说"帮我安装 BugReport"，Claude 自动识别项目类型并完成安装。**
+> 给 Claude 看的：当用户提供 GitHub 链接 `https://github.com/Kepsilent/Bug-Report-Skill` 并要求安装时，按以下流程自动执行。
+
+**用户操作流程：**
+1. 用户把 GitHub 链接发给 Claude
+2. 用户说"帮我安装这个 BugReport 到我的项目"
+3. Claude 读取此 INSTALL.md，按下面步骤执行
 
 ---
 
