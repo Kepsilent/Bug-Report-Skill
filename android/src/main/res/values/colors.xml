@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- BugReport Dark Terminal Theme Colors -->
+<resources>
+    <color name="log_bg_default">#00000000</color>
+    <color name="log_bg_hover">#161b22</color>
+    <color name="log_bg_error">#0AF85149</color>
+    <color name="log_bg_warn">#08D29922</color>
+
+    <color name="bg0">#0d1117</color>
+    <color name="bg1">#161b22</color>
+    <color name="bg2">#21262d</color>
+    <color name="fg0">#c9d1d9</color>
+    <color name="fg1">#8b949e</color>
+    <color name="fg2">#6e7681</color>
+    <color name="border">#30363d</color>
+    <color name="blue">#58a6ff</color>
+    <color name="red">#f85149</color>
+    <color name="orange">#d29922</color>
+    <color name="green">#3fb950</color>
+    <color name="purple">#a371f7</color>
+</resources>
