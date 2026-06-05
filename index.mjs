@@ -163,7 +163,7 @@
 
     autoAdapt()
 
-    if (_adapt.device) _dev = _adapt.device() || {}
+    if (_adapt.device) _dev = (_adapt.device.get ? _adapt.device.get() : _adapt.device()) || {}
 
     // restore
     if (_cfg.persist && _adapt.storage) {
@@ -228,7 +228,7 @@
       tag:    String(tag||''),
       msg:    String(message||''),
       stack:  String(stack||''),
-      page:   _adapt.page ? _adapt.page() : '',
+      page:   _adapt.page ? (_adapt.page.get ? _adapt.page.get() : _adapt.page()) : '',
       extra:  extra || null
     }
 
