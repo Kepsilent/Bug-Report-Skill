@@ -1,5 +1,5 @@
 // ============================================================
-// BugReport — Universal Logging Library v2.0
+// BugReport — Universal Logging Library v2.1
 // ============================================================
 // Zero dependencies · UMD · 12KB gzipped · MIT License
 //
@@ -46,7 +46,7 @@
 
   // ---- Internal State ----
   var _ok    = false
-  var _cfg   = { maxLogs: DEFAULT_MAX, minLevel: 0, persist: true, captureGlobal: false, capturePromise: false, appName: '', appVersion: '1.0.0' }
+  var _cfg   = { maxLogs: DEFAULT_MAX, minLevel: 0, persist: true, captureGlobal: false, capturePromise: false, captureNetwork: true, appName: '', appVersion: '1.0.0' }
   var _logs  = []
   var _seq   = 0
   var _watch = []
@@ -89,7 +89,16 @@
         }
       })
     }
-    // Browser
+    // React Native
+    else if (typeof navigator !== 'undefined' && navigator.product === 'ReactNative') {
+      adapter('device', function () {
+        return { model: 'ReactNative', system: (navigator.platform||'android'), appVer: _cfg.appVersion, appName: _cfg.appName||'', w: 0, h: 0, dpr: 1, lang: '' }
+      })
+      var _rnMem = {}
+      adapter('storage', { get: function(k) { return _rnMem[k]||null }, set: function(k,v) { _rnMem[k]=v }, del: function(k) { delete _rnMem[k] } })
+      adapter('page', function () { return 'RN' })
+    }
+    // Browser / WebView (Capacitor, Cordova, etc.)
     else if (typeof window !== 'undefined') {
       adapter('device', function () {
         return { model: (navigator.userAgent||'').slice(0,100), system: navigator.platform||'web', appVer: _cfg.appVersion, appName: _cfg.appName||document.title||'', w: window.innerWidth, h: window.innerHeight, dpr: window.devicePixelRatio||1, lang: navigator.language||'' }
@@ -165,7 +174,10 @@
 
     _dev.netType = _adapt.net && _adapt.net.type ? _adapt.net.type() : 'unknown'
 
-    _emit(LEVEL.INFO, CAT.APP, 'app:launch', 'BugReport v2.0 initialized')
+    // auto-patch network
+    if (_cfg.captureNetwork) _patchNetwork()
+
+    _emit(LEVEL.INFO, CAT.APP, 'app:launch', 'BugReport v2.1 initialized')
 
     if (_cfg.persist) _timer = setInterval(_persist, PERSIST_MS)
 
@@ -229,6 +241,79 @@
     err: function(url, err) { return _emit(LEVEL.ERROR, CAT.NETWORK, 'net:err', String(err), '', { url:url }) },
     slow: function(url, ms) { return _emit(LEVEL.WARN, CAT.NETWORK, 'net:slow', ms+'ms '+String(url).slice(-80), '', { url:url, duration:ms }) },
     timeout: function(url, ms) { return _emit(LEVEL.ERROR, CAT.NETWORK, 'net:timeout', (ms||'?')+'ms', '', { url:url }) }
+  }
+
+  // ---- Network Auto-Patch ----
+  var _netFetchRef = null
+  var _netXHROpenRef = null
+  var _netXHRSendRef = null
+
+  function _patchNetwork() {
+    if (typeof window === 'undefined') return
+
+    // --- fetch ---
+    if (window.fetch && !window.fetch.__br_patched) {
+      _netFetchRef = window.fetch
+      window.fetch = function(input, init) {
+        var url = ''
+        var method = ((init && init.method) || 'GET').toUpperCase()
+        try {
+          if (typeof input === 'string') { url = input }
+          else if (input && typeof input.url === 'string') { url = input.url; method = (input.method || method).toUpperCase() }
+          else { url = String(input||'') }
+        } catch(e) { url = String(input||'') }
+
+        var start = Date.now()
+        return _netFetchRef.call(this, input, init).then(function(resp) {
+          var dur = Date.now() - start
+          var size = 0
+          try { var cl = resp.headers.get('content-length'); if (cl) size = parseInt(cl)||0 } catch(e) {}
+          net.req(method, url, resp.status, dur, size)
+          return resp
+        }).catch(function(err) {
+          net.err(url, err.message || String(err))
+          throw err
+        })
+      }
+      window.fetch.__br_patched = true
+    }
+
+    // --- XMLHttpRequest ---
+    if (typeof XMLHttpRequest !== 'undefined' && !XMLHttpRequest.__br_patched) {
+      _netXHROpenRef = XMLHttpRequest.prototype.open
+      _netXHRSendRef = XMLHttpRequest.prototype.send
+      XMLHttpRequest.prototype.open = function(method, url) {
+        this.__br_method = method
+        this.__br_url = url
+        return _netXHROpenRef.apply(this, arguments)
+      }
+      XMLHttpRequest.prototype.send = function() {
+        var self = this
+        self.__br_start = Date.now()
+        var onEnd = function() {
+          var dur = Date.now() - (self.__br_start || Date.now())
+          var size = 0
+          try { var cl = self.getResponseHeader('content-length'); if (cl) size = parseInt(cl)||0 } catch(e) {}
+          try { net.req(self.__br_method||'?', self.__br_url||'', self.status, dur, size) } catch(e) {}
+        }
+        self.addEventListener('loadend', onEnd)
+        self.addEventListener('error', function() {
+          try { net.err(self.__br_url||'', 'XHR Error') } catch(e) {}
+        })
+        self.addEventListener('timeout', function() {
+          try { net.timeout(self.__br_url||'', Date.now() - (self.__br_start||Date.now())) } catch(e) {}
+        })
+        return _netXHRSendRef.apply(this, arguments)
+      }
+      XMLHttpRequest.__br_patched = true
+    }
+  }
+
+  function _unpatchNetwork() {
+    if (typeof window === 'undefined') return
+    if (_netFetchRef) { window.fetch = _netFetchRef; _netFetchRef = null; if (window.fetch) delete window.fetch.__br_patched }
+    if (_netXHROpenRef) { XMLHttpRequest.prototype.open = _netXHROpenRef; _netXHROpenRef = null }
+    if (_netXHRSendRef) { XMLHttpRequest.prototype.send = _netXHRSendRef; _netXHRSendRef = null; delete XMLHttpRequest.__br_patched }
   }
 
   // ---- Performance ----
@@ -359,7 +444,7 @@
   }
 
   function flush() { _persist() }
-  function destroy() { if(_timer){clearInterval(_timer);_timer=null}; _persist(); _watch=[] }
+  function destroy() { if(_timer){clearInterval(_timer);_timer=null}; _persist(); _watch=[]; _unpatchNetwork() }
 
   // ---- API ----
   return {

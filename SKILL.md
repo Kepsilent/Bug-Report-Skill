@@ -3,7 +3,9 @@ name: bug-report
 description: >
   全能 Bug 报告与诊断技能。触发条件：用户说"报bug"、"有问题"、"出错了"、"崩溃"、"帮我排查"、
   "帮我看看这个错误"、"分析日志"、分享错误截图/消息、或任何异常行为描述。
-  支持实时日志分析、代码追踪、性能诊断、修复建议。可嵌入任何项目使用。
+  支持实时日志分析、代码追踪、性能诊断、修复建议。零手动接入网络监控，可嵌入任何项目使用。
+ 
+ 覆盖平台：uni-app / React Native / Capacitor / Cordova / 浏览器 / Node.js
 ---
 
 # BugReport — 全能 Bug 诊断技能
@@ -30,12 +32,19 @@ description: >
 
 ### 接入方式
 
-将 `index.js` 复制到项目的 `src/utils/`，一行初始化：
+将 `index.js` 复制到项目的 `src/utils/`，一行初始化即可获得自动日志采集、网络拦截、崩溃捕获：
 
 ```js
 import BR from '@/utils/bug-report.js'
-BR.init({ appName: '你的App', appVersion: '1.0.0', captureGlobal: true })
+BR.init({ appName: '你的App', appVersion: '1.0.0' })
 ```
+
+默认已开启的能力：
+- 自动拦截全局 JS 崩溃
+- 自动拦截未捕获的 Promise 异常
+- **自动拦截所有 fetch 和 XMLHttpRequest 网络请求**（无需手动接入）
+- 日志自动持久化到本地存储
+- 性能追踪、生命周期监控
 
 然后将 `log-viewer.vue` 注册为一个页面，即可在 App 内查看 IDE 风格的实时日志面板。
 
@@ -57,9 +66,11 @@ BR.init({ appName: '你的App', appVersion: '1.0.0', captureGlobal: true })
 
 ### 日志获取
 
-- 用户打开 App → 设置 → BugReport → export → 粘贴
+日志已自动采集到 App 本地。用户获取方式：
+- App 内打开 BugReport 面板 → export → 复制粘贴
 - 或用户直接粘贴终端/ADB logcat 输出
 - 如有 JSON 导出文件，让用户提供
+- **网络日志已是全自动的**，无需开发者在网络层做任何手动接入
 
 ---
 

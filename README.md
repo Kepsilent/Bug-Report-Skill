@@ -2,7 +2,7 @@
 
 **Claude Code Skill — 全能 Bug 诊断与日志系统**
 
-A Claude Code skill for comprehensive bug diagnosis, paired with a zero-dependency logging library that works in any JavaScript app (uni-app / Vue / React / vanilla).
+A Claude Code skill for comprehensive bug diagnosis, paired with a zero-dependency logging library that works in any JavaScript app — uni-app, React Native, Capacitor, Cordova, Vue, React, vanilla JS, Node.js. **Network requests are auto-captured — no manual wiring needed.**
 
 ```
 E:3  W:12  N:45  P:5   36m uptime
@@ -20,7 +20,7 @@ all  errors(3)  warnings(12)  network(45)  perf(5)  crash(0)
 | File | Purpose |
 |------|---------|
 | `SKILL.md` | **主文件** — Claude Code Skill 定义，安装到 `~/.claude/skills/bug-report/` |
-| `index.js` | 配套 — 零依赖通用日志库 (UMD, 12KB)，自动适配 uni-app / 浏览器 / Node |
+| `index.js` | 配套 — 零依赖通用日志库 (UMD, 12KB)，自动适配 uni-app / React Native / Capacitor / 浏览器 / Node。**自动拦截 fetch 和 XHR** |
 | `log-viewer.vue` | 配套 — IDE 暗色终端风日志查看器，VS Code 风格 |
 
 ## Install the Skill
@@ -46,14 +46,16 @@ In Claude Code, just type `/bug-report` or say "帮我排查这个错误" — th
 ```js
 import BR from './bug-report.js'
 
-// One-line init
-BR.init({ appName: 'MyApp', appVersion: '1.0.0', captureGlobal: true })
+// One-line init — auto-captures crashes, promise errors, and ALL network requests
+BR.init({ appName: 'MyApp', appVersion: '1.0.0' })
 
 // Log anything
 BR.info('page', 'Home loaded')
 BR.w('render', 'Slow render: 2100ms')
-BR.e('api', 'POST /login timeout')
-BR.net.req('GET', 'https://api.io/users', 500, 3200, 0)
+BR.e('api', 'POST /login failed')
+
+// Network requests are auto-captured via fetch/XHR interception (on by default)
+// Just use fetch() or XMLHttpRequest as normal — BugReport logs every request automatically
 
 // Performance tracing
 BR.perf.start('loadData')
@@ -101,12 +103,16 @@ Dark terminal theme. VS Code aesthetic. Zero emoji.
 
 ## Platform Support
 
-| Platform | Auto-detected |
-|----------|:---:|
-| uni-app (Android/iOS) | Yes |
-| Browser (Vue/React) | Yes |
-| Node.js | Yes |
-| Custom | via `BR.adapter()` |
+| Platform | Auto-detected | Network Auto-Capture |
+|----------|:---:|:---:|
+| uni-app (Android/iOS) | Yes | Yes (WebView) |
+| React Native | Yes | Yes |
+| Capacitor / Cordova | Yes | Yes |
+| Browser (Vue/React/vanilla) | Yes | Yes |
+| Node.js | Yes | N/A (no fetch/XHR) |
+| Custom | via `BR.adapter()` | — |
+
+> Note: Pure native Android (Java/Kotlin) is not supported. This library targets JavaScript runtimes. For native Android, a Java port is planned separately.
 
 ## License
 
