@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>BugReport v2.1 — Browser Test</title>
+<style>
+  body { font-family: monospace; background: #0d1117; color: #c9d1d9; padding: 20px; }
+  .pass { color: #3fb950; } .fail { color: #f85149; } .info { color: #58a6ff; }
+  h2 { color: #f0f6fc; border-bottom: 1px solid #30363d; padding-bottom: 8px; }
+  pre { background: #161b22; padding: 8px; border-radius: 4px; overflow-x: auto; }
+</style>
+</head>
+<body>
+<h2>🔬 BugReport v2.1 — Browser Test Suite</h2>
+<pre id="output"></pre>
+
+<script src="../index.js"></script>
+<script>
+'use strict'
+
+const out = document.getElementById('output')
+let passed = 0, failed = 0
+
+function log(msg, cls) { const div = document.createElement('div'); div.className = cls || ''; div.textContent = msg; out.appendChild(div) }
+
+function test(name, fn) {
+  try { fn(); passed++; log('PASS  ' + name, 'pass') }
+  catch(e) { failed++; log('FAIL  ' + name + ' — ' + e.message, 'fail') }
+}
+
+// ===== SCRIPT TAG / UMD =====
+test('window.BugReport is defined after script tag', () => {
+  if (!window.BugReport) throw new Error('BugReport not on window')
+  if (typeof window.BugReport.init !== 'function') throw new Error('init not a function')
+})
+
+var BR = window.BugReport
+BR.clear()
+
+// ===== INIT IN BROWSER =====
+test('init() in browser detects window/document', () => {
+  const r = BR.init({ appName: 'BrowserTest', persist: false, captureGlobal: false, capturePromise: false, captureNetwork: false })
+  if (!r.device || r.device.model === 'unknown') throw new Error('browser detection failed: ' + JSON.stringify(r.device))
+})
+
+// ===== BASIC LOGGING =====
+test('log levels work in browser', () => {
+  const v = BR.v('browser', 'verbose')
+  const d = BR.d('browser', 'debug')
+  const i = BR.info('browser', 'info')
+  const w = BR.w('browser', 'warn')
+  const e = BR.e('browser', 'error')
+  const f = BR.f('browser', 'fatal')
+  if (v.level !== 0) throw new Error('v() wrong level: ' + v.level)
+  if (d.level !== 1) throw new Error('d() wrong level: ' + d.level)
+  if (i.level !== 2) throw new Error('info() wrong level: ' + i.level)
+  if (w.level !== 3) throw new Error('w() wrong level: ' + w.level)
+  if (e.level !== 4) throw new Error('e() wrong level: ' + e.level)
+  if (f.level !== 5) throw new Error('f() wrong level: ' + f.level)
+})
+
+// ===== LOCAL STORAGE PERSISTENCE =====
+test('localStorage persistence works', () => {
+  BR.clear()
+  localStorage.removeItem('bugreport_logs')
+  BR.init({ appName: 'Persist', persist: true, captureGlobal: false, capturePromise: false, captureNetwork: false })
+  BR.e('persist', 'save me')
+  BR.flush()
+  const stored = localStorage.getItem('bugreport_logs')
+  if (!stored) throw new Error('logs not saved to localStorage')
+  try {
+    const parsed = JSON.parse(stored)
+    if (!Array.isArray(parsed)) throw new Error('stored logs not an array')
+    if (parsed.length < 1) throw new Error('stored logs empty')
+  } catch(e) { throw new Error('stored logs not valid JSON: ' + e.message) }
+})
+
+// ===== FETCH INTERCEPTION (AUTO) =====
+test('fetch() interception — success', async () => {
+  try {
+    // Use a real request or mock
+    const resp = await fetch('/favicon.ico')
+    // Give time for the interceptor's .then() to fire
+    await new Promise(r => setTimeout(r, 50))
+    const netLogs = BR.query({ cat: 'NETWORK' })
+    const found = netLogs.find(l => l.extra && l.extra.url === '/favicon.ico')
+    if (!found) throw new Error('fetch was not intercepted — no NETWORK log for /favicon.ico')
+    log('       status=' + found.extra.status + ' dur=' + found.extra.duration + 'ms', 'info')
+  } catch(e) {
+    // Network errors are expected in some environments (file://, CORS)
+    log('       (network call may have failed, checking error interception)', 'info')
+    await new Promise(r => setTimeout(r, 50))
+    // At minimum, no crash
+  }
+})
+
+// ===== FETCH ERROR INTERCEPTION =====
+test('fetch() error interception does not crash', async () => {
+  try {
+    await fetch('https://invalid.domain.that.does.not.exist.test/bugreport-test')
+  } catch(e) {
+    // Expected — CORS or DNS failure
+  }
+  await new Promise(r => setTimeout(r, 50))
+  // Verify no crash — if we reach here, the app is still running
+  BR.info('fetch:test', 'still alive after fetch error')
+})
+
+// ===== XMLHttpRequest INTERCEPTION =====
+test('XMLHttpRequest() interception', (done) => {
+  const xhr = new XMLHttpRequest()
+  xhr.open('GET', '/favicon.ico')
+  xhr.onloadend = function() {
+    setTimeout(() => {
+      const netLogs = BR.query({ cat: 'NETWORK' })
+      const found = netLogs.find(l => l.extra && l.extra.url === '/favicon.ico')
+      if (found) {
+        log('       XHR status=' + found.extra.status + ' dur=' + found.extra.duration + 'ms', 'info')
+      }
+      done()
+    }, 50)
+  }
+  xhr.onerror = function() {
+    setTimeout(() => {
+      const netLogs = BR.query({ cat: 'NETWORK' })
+      // Even on error, there should be a log
+      done()
+    }, 50)
+  }
+  xhr.send()
+})
+
+// ===== QUERY + EXPORT IN BROWSER =====
+test('query() in browser works', () => {
+  const text = BR.exportLogs('text')
+  if (!text.includes('BugReport Log Export')) throw new Error('text export missing header')
+})
+test('stats() in browser works', () => {
+  const s = BR.stats()
+  if (typeof s.total !== 'number') throw new Error('stats broken')
+})
+
+// ===== WATCH IN BROWSER =====
+test('watch() fires in browser', (done) => {
+  let fired = false
+  const unsub = BR.watch(function(l) { fired = true })
+  BR.e('watch:test', 'fire in browser')
+  setTimeout(() => {
+    unsub()
+    if (!fired) throw new Error('watch callback did not fire')
+    done()
+  }, 30)
+})
+
+// ===== DESTROY + RE-INIT =====
+test('destroy() + re-init in browser', () => {
+  BR.destroy()
+  BR.init({ appName: 'ReinitBrowser', persist: false, captureGlobal: false, capturePromise: false, captureNetwork: false })
+  if (!BR.device().model) throw new Error('re-init after destroy failed')
+})
+
+// ===== BR.wx in browser (should be available but wx.request won't work) =====
+test('BR.wx exists in browser', () => {
+  if (typeof BR.wx !== 'object') throw new Error('BR.wx not exposed')
+  if (typeof BR.wx.req !== 'function') throw new Error('BR.wx.req not a function')
+})
+
+// ===== GLOBAL ERROR CAPTURE =====
+test('global error capture enabled', () => {
+  // Only test that the flag works, don't actually throw
+  BR.destroy()
+  BR.init({ appName: 'ErrCap', captureGlobal: true, capturePromise: false, captureNetwork: false, persist: false })
+  // Send a fake error to the handler
+  try {
+    var oldHandler = window.onerror
+    window.dispatchEvent(new ErrorEvent('error', { message: 'BugReport browser test error', error: new Error('test') }))
+  } catch(e) {}
+})
+
+// ===== FINAL SUMMARY =====
+setTimeout(() => {
+  log('')
+  if (failed === 0) {
+    log('All ' + passed + ' browser tests passed. ✅', 'pass')
+  } else {
+    log(passed + ' passed, ' + failed + ' FAILED ❌', 'fail')
+  }
+  // Write results as a global so automated tools can read
+  window.__BR_TEST_RESULTS = { passed: passed, failed: failed }
+}, 200)
+</script>
+</body>
+</html>

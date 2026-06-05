@@ -412,7 +412,7 @@
     if (f.since)  r = r.filter(function(l) { return l.ts >= f.since })
     if (f.until)  r = r.filter(function(l) { return l.ts <= f.until })
     r.reverse()
-    if (f.limit) r = r.slice(0, f.limit)
+    if (f.limit !== undefined && f.limit !== null) r = r.slice(0, f.limit)
     return r
   }
 
@@ -502,7 +502,7 @@
   }
 
   function flush() { _persist() }
-  function destroy() { if(_timer){clearInterval(_timer);_timer=null}; _persist(); _watch=[]; _unpatchNetwork() }
+  function destroy() { if(_timer){clearInterval(_timer);_timer=null}; _persist(); _watch=[]; _unpatchNetwork(); _ok = false }
 
   // ---- API ----
   return {
