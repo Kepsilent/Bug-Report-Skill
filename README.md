@@ -2,12 +2,24 @@
 
 [![JS](https://img.shields.io/badge/JS-HBuilderX-blue)](#hbuilderx--js)
 [![Kotlin](https://img.shields.io/badge/Kotlin-Android%20Studio-purple)](#android-studio--kotlin)
-[![Swift](https://img.shields.io/badge/Swift-iOS-orange)](#ios--swift-后续)
+[![Swift](https://img.shields.io/badge/Swift-iOS-orange)](#ios--swift)
 [![WeChat](https://img.shields.io/badge/WeChat-Mini%20Program-green)](#微信小程序)
 [![uni-app](https://img.shields.io/badge/uni--app-✓-brightgreen)](#hbuilderx--js)
 [![MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
 **一套 Skill，通吃所有平台。** 零依赖、一行接入、自动网络拦截、统一暗色终端可视化。
+
+## 一键安装
+
+**把这个 URL 甩给 Claude Code，它就能自动识别你的项目类型并完成安装：**
+
+```
+https://github.com/Kepsilent/Bug-Report-Skill
+```
+
+你也可以直接说：**"帮我安装 BugReport"** — Claude 会读取 [INSTALL.md](INSTALL.md) 自动执行。
+
+手动安装请往下看各平台说明 ↓
 
 ---
 
@@ -25,7 +37,7 @@
 |-----|------|------|:---:|
 | `index.js` | JavaScript (UMD) | uni-app / 微信小程序 / React Native / Capacitor / 浏览器 / Node | ✅ Ready |
 | `android/` | Kotlin | Android Studio 原生应用 (Java/Kotlin) | ✅ Ready |
-| `ios/` | Swift | iOS 原生应用 | 🔜 后续 |
+| `ios/` | Swift | iOS 原生应用 | ✅ Ready |
 
 所有版本共享统一的 **LogEntry 数据合约**，确保跨平台日志格式一致 — SKILL.md 无需修改即可诊断任何平台的 Bug。
 
