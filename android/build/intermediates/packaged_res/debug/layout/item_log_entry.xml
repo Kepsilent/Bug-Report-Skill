@@ -107,6 +107,18 @@
             android:lineSpacingExtra="2dp" />
 
         <TextView
+            android:id="@+id/log_stack_header"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="#f85149"
+            android:textSize="10sp"
+            android:fontFamily="monospace"
+            android:textStyle="bold"
+            android:layout_marginTop="8dp"
+            android:text="Stack Trace"
+            android:visibility="gone" />
+
+        <TextView
             android:id="@+id/log_stack"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

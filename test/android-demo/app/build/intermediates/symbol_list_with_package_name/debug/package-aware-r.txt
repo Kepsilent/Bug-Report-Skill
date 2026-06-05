@@ -3228,6 +3228,7 @@ id log_list
 id log_meta
 id log_msg
 id log_stack
+id log_stack_header
 id log_time
 id m3_side_sheet
 id marquee

@@ -1,111 +1,390 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- BugReport LogViewer — Dark Terminal Theme -->
+<!-- BugReport Log Viewer — matches uni-app log-viewer-common.vue structure exactly -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="#0d1117">
 
-    <!-- Toolbar -->
+    <!-- ============================================================
+         Section 1: Toolbar (.br-toolbar)
+         ============================================================ -->
     <LinearLayout
+        android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="48dp"
-        android:background="#161b22"
+        android:orientation="horizontal"
         android:gravity="center_vertical"
-        android:paddingStart="16dp"
-        android:paddingEnd="16dp"
-        android:orientation="horizontal">
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        android:background="#161b22">
 
-        <TextView
+        <!-- Left: title + status dot + status text -->
+        <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="BugReport"
-            android:textColor="#f0f6fc"
-            android:textSize="14sp"
-            android:textStyle="bold" />
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
 
-        <TextView
-            android:id="@+id/btn_live"
+            <TextView
+                android:id="@+id/tb_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="BugReport"
+                android:textColor="#f0f6fc"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+            <View
+                android:id="@+id/status_dot"
+                android:layout_width="8dp"
+                android:layout_height="8dp"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="4dp" />
+
+            <TextView
+                android:id="@+id/tb_status"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=""
+                android:textColor="#8b949e"
+                android:textSize="11sp" />
+        </LinearLayout>
+
+        <!-- Right: buttons -->
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="|| pause"
-            android:textColor="#c9d1d9"
-            android:textSize="11sp"
-            android:padding="4dp"
-            android:onClick="onToggleLive" />
+            android:orientation="horizontal">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="export"
-            android:textColor="#c9d1d9"
-            android:textSize="11sp"
-            android:padding="4dp"
-            android:onClick="onExportText" />
+            <TextView
+                android:id="@+id/btn_live"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=""
+                android:textColor="#c9d1d9"
+                android:textSize="11sp"
+                android:padding="4dp"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                android:background="#21262d"
+                android:onClick="onToggleLive" />
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="clear"
-            android:textColor="#f85149"
-            android:textSize="11sp"
-            android:padding="4dp"
-            android:onClick="onClear" />
+            <TextView
+                android:id="@+id/btn_export"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=""
+                android:textColor="#c9d1d9"
+                android:textSize="11sp"
+                android:padding="4dp"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                android:layout_marginStart="6dp"
+                android:background="#21262d"
+                android:onClick="onExport" />
+
+            <TextView
+                android:id="@+id/btn_filter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=""
+                android:textColor="#c9d1d9"
+                android:textSize="11sp"
+                android:padding="4dp"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                android:layout_marginStart="6dp"
+                android:background="#21262d"
+                android:onClick="onFilter" />
+        </LinearLayout>
     </LinearLayout>
 
-    <!-- Tab Bar -->
+    <!-- ============================================================
+         Section 2: Quick Stats Bar (.br-stats)
+         ============================================================ -->
+    <LinearLayout
+        android:id="@+id/stats_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingTop="6dp"
+        android:paddingBottom="6dp"
+        android:background="#161b22">
+
+        <TextView
+            android:id="@+id/stat_e"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text=""
+            android:textColor="#f85149"
+            android:textSize="11sp"
+            android:fontFamily="monospace"
+            android:paddingEnd="16dp"
+            android:onClick="onStatE" />
+
+        <TextView
+            android:id="@+id/stat_w"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text=""
+            android:textColor="#d29922"
+            android:textSize="11sp"
+            android:fontFamily="monospace"
+            android:paddingEnd="16dp"
+            android:onClick="onStatW" />
+
+        <TextView
+            android:id="@+id/stat_n"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text=""
+            android:textColor="#58a6ff"
+            android:textSize="11sp"
+            android:fontFamily="monospace"
+            android:paddingEnd="16dp"
+            android:onClick="onStatN" />
+
+        <TextView
+            android:id="@+id/stat_p"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text=""
+            android:textColor="#a371f7"
+            android:textSize="11sp"
+            android:fontFamily="monospace"
+            android:paddingEnd="16dp"
+            android:onClick="onStatP" />
+
+        <Space
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
+
+        <TextView
+            android:id="@+id/stat_session"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text=""
+            android:textColor="#6e7681"
+            android:textSize="11sp"
+            android:fontFamily="monospace" />
+    </LinearLayout>
+
+    <!-- ============================================================
+         Section 3: Search Bar (.br-filter) — hidden by default
+         ============================================================ -->
+    <LinearLayout
+        android:id="@+id/search_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:padding="8dp"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:background="#161b22"
+        android:visibility="gone">
+
+        <EditText
+            android:id="@+id/search_input"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:hint=""
+            android:textColorHint="#6e7681"
+            android:textColor="#c9d1d9"
+            android:textSize="12sp"
+            android:fontFamily="monospace"
+            android:background="#0d1117"
+            android:padding="8dp"
+            android:singleLine="true"
+            android:imeOptions="actionSearch"
+            android:onClick="onSearch" />
+
+        <TextView
+            android:id="@+id/btn_close_search"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text=""
+            android:textColor="#c9d1d9"
+            android:textSize="11sp"
+            android:padding="4dp"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:background="#21262d"
+            android:layout_marginStart="8dp"
+            android:onClick="onCloseSearch" />
+    </LinearLayout>
+
+    <!-- ============================================================
+         Section 4: Tab Bar (.br-tabs)
+         ============================================================ -->
     <HorizontalScrollView
         android:layout_width="match_parent"
-        android:layout_height="40dp"
+        android:layout_height="wrap_content"
         android:background="#161b22"
         android:scrollbars="none">
 
         <LinearLayout
             android:id="@+id/tab_bar"
             android:layout_width="wrap_content"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:paddingStart="8dp"
             android:paddingEnd="8dp" />
     </HorizontalScrollView>
 
-    <!-- Search -->
-    <EditText
-        android:id="@+id/search_input"
-        android:layout_width="match_parent"
-        android:layout_height="40dp"
-        android:background="#0d1117"
-        android:hint="filter: tag, message, category..."
-        android:textColor="#c9d1d9"
-        android:textColorHint="#6e7681"
-        android:textSize="12sp"
-        android:paddingStart="16dp"
-        android:paddingEnd="16dp"
-        android:singleLine="true"
-        android:imeOptions="actionSearch"
-        android:onClick="onSearch" />
-
-    <!-- Log List -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/log_list"
+    <!-- ============================================================
+         Section 5: Log List (.br-list)
+         ============================================================ -->
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"
-        android:scrollbars="vertical" />
+        android:layout_weight="1">
 
-    <!-- Status Bar -->
-    <TextView
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/log_list"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false" />
+
+        <TextView
+            android:id="@+id/empty_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text=""
+            android:textColor="#6e7681"
+            android:textSize="12sp"
+            android:visibility="gone" />
+    </FrameLayout>
+
+    <!-- ============================================================
+         Section 6: Status Bar (.br-status)
+         ============================================================ -->
+    <LinearLayout
         android:id="@+id/status_bar"
         android:layout_width="match_parent"
-        android:layout_height="32dp"
-        android:background="#58a6ff"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
         android:gravity="center_vertical"
         android:paddingStart="16dp"
         android:paddingEnd="16dp"
-        android:text="0 logs"
-        android:textColor="#ffffff"
-        android:textSize="11sp"
-        android:fontFamily="monospace" />
+        android:paddingTop="4dp"
+        android:paddingBottom="4dp"
+        android:background="#58a6ff">
+
+        <!-- Info -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:id="@+id/status_logs_count"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=""
+                android:textColor="#ffffff"
+                android:textSize="11sp"
+                android:fontFamily="monospace" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="|"
+                android:textColor="#ffffff"
+                android:textSize="11sp"
+                android:fontFamily="monospace"
+                android:paddingStart="6dp"
+                android:paddingEnd="6dp" />
+
+            <TextView
+                android:id="@+id/status_uptime"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=""
+                android:textColor="#ffffff"
+                android:textSize="11sp"
+                android:fontFamily="monospace" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="|"
+                android:textColor="#ffffff"
+                android:textSize="11sp"
+                android:fontFamily="monospace"
+                android:paddingStart="6dp"
+                android:paddingEnd="6dp" />
+
+            <TextView
+                android:id="@+id/status_device"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=""
+                android:textColor="#ffffff"
+                android:textSize="11sp"
+                android:fontFamily="monospace" />
+        </LinearLayout>
+
+        <!-- Buttons -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/btn_copy_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=""
+                android:textColor="#ffffff"
+                android:textSize="11sp"
+                android:paddingStart="10dp"
+                android:paddingEnd="10dp"
+                android:paddingTop="3dp"
+                android:paddingBottom="3dp"
+                android:background="@drawable/status_btn_bg"
+                android:onClick="onCopyText" />
+
+            <TextView
+                android:id="@+id/btn_copy_json"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=""
+                android:textColor="#ffffff"
+                android:textSize="11sp"
+                android:paddingStart="10dp"
+                android:paddingEnd="10dp"
+                android:paddingTop="3dp"
+                android:paddingBottom="3dp"
+                android:layout_marginStart="6dp"
+                android:background="@drawable/status_btn_bg"
+                android:onClick="onCopyJson" />
+
+            <TextView
+                android:id="@+id/btn_clear"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=""
+                android:textColor="#ffb3b0"
+                android:textSize="11sp"
+                android:paddingStart="10dp"
+                android:paddingEnd="10dp"
+                android:paddingTop="3dp"
+                android:paddingBottom="3dp"
+                android:layout_marginStart="6dp"
+                android:background="@drawable/status_btn_bg"
+                android:onClick="onClear" />
+        </LinearLayout>
+    </LinearLayout>
 
 </LinearLayout>

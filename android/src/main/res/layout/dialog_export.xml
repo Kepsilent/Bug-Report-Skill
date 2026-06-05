@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Export format selection dialog — matches uni-app .br-overlay -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="24dp"
+    android:background="#161b22">
+
+    <TextView
+        android:id="@+id/export_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:textColor="#f0f6fc"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:paddingBottom="16dp" />
+
+    <LinearLayout
+        android:id="@+id/export_opt_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="12dp"
+        android:background="?attr/selectableItemBackground">
+
+        <TextView
+            android:id="@+id/export_text_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text=""
+            android:textColor="#c9d1d9"
+            android:textSize="14sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/export_text_desc"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text=""
+            android:textColor="#8b949e"
+            android:textSize="11sp"
+            android:paddingTop="2dp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/export_opt_json"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="12dp"
+        android:layout_marginTop="4dp"
+        android:background="?attr/selectableItemBackground">
+
+        <TextView
+            android:id="@+id/export_json_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text=""
+            android:textColor="#c9d1d9"
+            android:textSize="14sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/export_json_desc"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text=""
+            android:textColor="#8b949e"
+            android:textSize="11sp"
+            android:paddingTop="2dp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/export_opt_csv"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="12dp"
+        android:layout_marginTop="4dp"
+        android:background="?attr/selectableItemBackground">
+
+        <TextView
+            android:id="@+id/export_csv_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text=""
+            android:textColor="#c9d1d9"
+            android:textSize="14sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/export_csv_desc"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text=""
+            android:textColor="#8b949e"
+            android:textSize="11sp"
+            android:paddingTop="2dp" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/export_cancel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:textColor="#8b949e"
+        android:textSize="14sp"
+        android:gravity="center"
+        android:paddingTop="16dp"
+        android:paddingBottom="4dp" />
+
+</LinearLayout>

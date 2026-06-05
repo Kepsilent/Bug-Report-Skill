@@ -26,6 +26,7 @@ int id log_list 0x0
 int id log_meta 0x0
 int id log_msg 0x0
 int id log_stack 0x0
+int id log_stack_header 0x0
 int id log_time 0x0
 int id search_input 0x0
 int id status_bar 0x0
