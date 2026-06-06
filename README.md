@@ -7,6 +7,9 @@
 [![uni-app](https://img.shields.io/badge/uni--app-✓-brightgreen)](#hbuilderx--js)
 [![MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 [![Agents](https://img.shields.io/badge/AI%20Agents-Claude%20Code%20%7C%20Reasonix%20%7C%20Cursor%20%7C%20Codex%20%7C%20Copilot%20%7C%20Windsurf%20%7C%20Gemini%20CLI%20%7C%20...-6e40c9)](https://github.com/Kepsilent/Bug-Report-Skill)
+[![Tests](https://img.shields.io/badge/Tests-122%2F122%20passed-green)](https://github.com/Kepsilent/Bug-Report-Skill/blob/main/TEST.md)
+[![Platforms](https://img.shields.io/badge/Platforms-6%20verified-blue)](#-测试成绩单)
+[![iOS](https://img.shields.io/badge/iOS-untested-lightgrey)]()
 
 **BRS — 跨平台崩溃监控与 AI 智能诊断系统。** 零依赖、一行接入、自动网络拦截、隐私脱敏、全平台可视化。
 
@@ -309,6 +312,22 @@ node mcp-server.js --dir ./bugs/
   }
 }
 ```
+
+---
+
+## 🧪 测试成绩单
+
+| 平台 | 测试项 | 状态 |
+|------|--------|:--:|
+| Node.js | 122 项自动化 | ✅ |
+| Browser | 13 项 + 面板渲染 | ✅ |
+| HBuilderX | uni-app 编译运行 | ✅ |
+| Android Studio | Kotlin 编译 | ✅ |
+| Reasonix | Skill 诊断 + MCP 调用 | ✅ |
+| HTML Viewer | WebView 面板 | ✅ |
+| iOS (Xcode) | Swift 编译 | ❓ 未测试 |
+
+> 💡 iOS 代码已完整实现，等待社区贡献者验证或在 Xcode 中编译。完整测试报告 → [TEST.md](TEST.md)
 
 ---
 

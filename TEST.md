@@ -1,4 +1,4 @@
-# BugReport v3.0 — 全栈测试方案
+# BRS v3.0 — 全栈测试方案
 
 ## 测试 1：JS SDK — Node.js 冒烟测试（⭐ 最优先，0 依赖立即跑）
 
@@ -133,21 +133,26 @@ PASS  BR.wx.post() shorthand works
 
 ## 测试总结清单
 
-| # | 测试 | 命令 | 测试数 | 结果 |
+| # | 测试 | 平台 | 测试数 | 结果 |
 |---|------|------|:---:|:---:|
-| 1 | JS SDK 冒烟 | `node test/smoke.js` | 8 | ✅ |
-| 2 | ESM 导入 | `node test/esm-test.mjs` | 5 | ✅ |
-| 3 | globalThis 白屏修复 | `node test/globalThis-test.js` | 3 | ✅ |
-| 4 | 微信小程序适配器 | `node test/wx-adapter-test.js` | 6 | ✅ |
-| 5 | 边界和异常测试 | `node test/boundary-test.js` | 50 | ✅ |
-| 6 | 浏览器环境测试 | 打开 `test/browser-test.html` | 13 | ✅ |
-| 7 | **面包屑 (Breadcrumbs)** | `node test/crumb-test.js` | 9 | ✅ |
-| 8 | **状态快照 (Snapshot)** | `node test/snapshot-test.js` | 7 | ✅ |
-| 9 | **隐私脱敏 (Sanitizer)** | `node test/sanitizer-test.js` | 9 | ✅ |
-| 10 | **MCP Server** | `node test/mcp-test.js` | 4 | ✅ |
-| 11 | uni-app 编译 | HBuilderX 编译 H5/APP/MP | — | ⬜ 需 IDE |
-| 12 | Android 编译 | `cd android && ./gradlew assembleDebug` | — | ⬜ 需 Gradle |
-| 13 | Skill 触发 | Reasonix 中说 `/bug-report` | — | ✅ 已验证 |
-| 14 | 一键安装 | Agent 中甩仓库链接 | — | ✅ 已验证 |
+| 1 | JS SDK 冒烟 | Node.js | 8 | ✅ |
+| 2 | ESM 导入 | Node.js | 5 | ✅ |
+| 3 | globalThis 白屏修复 | Node.js | 3 | ✅ |
+| 4 | 微信小程序适配器 | Node.js | 6 | ✅ |
+| 5 | 边界和异常测试 | Node.js | 50 | ✅ |
+| 6 | 浏览器环境测试 | Browser | 13 | ✅ |
+| 7 | **面包屑 (Breadcrumbs)** | Node.js | 9 | ✅ |
+| 8 | **状态快照 (Snapshot)** | Node.js | 7 | ✅ |
+| 9 | **隐私脱敏 (Sanitizer)** | Node.js | 9 | ✅ |
+| 10 | **MCP Server** | Node.js | 4 | ✅ |
+| 11 | MCP 真实调用 | BRS MCP | 2 | ✅ |
+| 12 | Skill 诊断 | Reasonix | 5 阶段 | ✅ |
+| 13 | uni-app 编译 | HBuilderX | 30+ | ✅ |
+| 14 | Android 编译 | Android Studio | — | ✅ |
+| 15 | HTML 面板 | Browser | — | ✅ |
+| 16 | 一键安装 | Reasonix | — | ✅ |
+| 17 | iOS 编译 | Xcode | — | ❓ 未测试 |
 
-**总计：122/122 自动化测试通过 ✅ (109 Node.js + 13 浏览器) | 2项需外部环境手动验证**
+**总计：122/122 自动化测试通过 ✅ (Node.js) | 6/6 平台手动验证通过 ✅ | 1 项未测试 (iOS Xcode)**
+
+> 💡 iOS SDK 代码已完整实现（Swift, Package.swift, SPM 就绪），但未在 Xcode 中编译验证。欢迎社区贡献者通过 PR 完成 iOS 测试。
