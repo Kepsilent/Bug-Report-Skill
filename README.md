@@ -67,17 +67,17 @@ https://github.com/Kepsilent/Bug-Report-Skill
 
 | 功能 | 说明 |
 |------|------|
-| 📋 **智能日志采集** | 6 级日志（V/D/I/W/E/F），12 种分类，自动适配 uni-app / 微信 / Android / iOS / React Native / Node / Electron |
-| 🍞 **面包屑追踪** | FIFO 50 步定长队列，自动记录路由跳转、前后台切换、网络变化等关键操作，崩溃时精准还原用户路径 |
-| 📸 **状态快照** | `BR.snapshot(data)` 保存业务状态，崩溃时自动注入日志，一眼看清崩溃时刻的上下文 |
-| 🌐 **网络自动拦截** | Monkey-patch fetch/XHR（JS）、OkHttp Interceptor（Android）、URLProtocol（iOS），零手动接入 |
-| 🔒 **隐私脱敏** | 拦截器前置内存清洗，password/token/手机号/邮箱/身份证匹配即替换为 `***`，不触碰 I/O |
-| 📊 **跨平台可视化面板** | Chrome DevTools 风格纯 HTML，WebView 加载即用，Android/iOS/Electron/浏览器全平台统一 |
-| 🧠 **AI 智能诊断** | 5 阶段诊断流程（收集→分析→追踪→报告→修复），Claude Code / Reasonix / Cursor / Copilot 等均可调用 |
-| 🔌 **MCP Server** | `get_latest_crash` + `search_logs`，AI Agent 通过标准 MCP 协议直接查询日志 JSON |
-| 🚨 **崩溃自动捕获** | 全局 JS 异常 + Promise 未捕获 + Native 崩溃（Android/iOS），自动持久化到本地存储 |
-| ⚡ **性能追踪** | `BR.perf.start/end` 计时器，超阈值自动标 WARN，支持自定义阈值 |
-| 📱 **全生命周期监控** | App 前台/后台、页面进入/离开自动记录，排查前后台切换引发的状态异常 |
+| 📋 **智能日志采集** | 6 级日志（V/D/I/W/E/F），14 种分类，自动适配 uni-app / 微信 / Android / iOS / React Native / Node / Electron | ✅ JS | ✅ Android | ✅ iOS |
+| 🍞 **面包屑追踪** | FIFO 50 步定长队列，自动记录路由跳转、前后台切换、网络变化等关键操作，崩溃时精准还原用户路径 | ✅ JS | ✅ Android | ✅ iOS |
+| 📸 **状态快照** | `BR.snapshot(data)` 保存业务状态，崩溃时自动注入日志，一眼看清崩溃时刻的上下文 | ✅ JS | ✅ Android | ✅ iOS |
+| 🌐 **网络自动拦截** | Monkey-patch fetch/XHR（JS）、OkHttp Interceptor（Android）、URLProtocol（iOS），零手动接入 | ✅ JS | ✅ Android | ✅ iOS |
+| 🔒 **隐私脱敏** | 拦截器前置内存清洗，password/token/手机号/邮箱/身份证匹配即替换为 `***`，不触碰 I/O | ✅ JS | ✅ Android | ✅ iOS |
+| 📊 **可视化面板** | Chrome DevTools 风格纯 HTML，WebView 加载即用，Android/iOS/Electron/浏览器全平台统一 | ✅ WebView | ✅ WebView | ✅ WKWebView |
+| 🧠 **AI 智能诊断** | 5 阶段诊断流程（收集→分析→追踪→报告→修复），Claude Code / Reasonix / Cursor / Copilot 等均可调用 | ✅ | ✅ | ✅ |
+| 🔌 **MCP Server** | `get_latest_crash` + `search_logs`，AI Agent 通过标准 MCP 协议直接查询日志 JSON | ✅ Node.js | — | — |
+| 🚨 **崩溃自动捕获** | 全局 JS 异常 + Promise 未捕获 + Native 崩溃（Android/iOS），自动持久化 | ✅ JS | ✅ Android | ✅ iOS |
+| ⚡ **性能追踪** | `BR.perf.start/end` 计时器，超阈值自动标 WARN，支持自定义阈值 | ✅ JS | ✅ Android | ✅ iOS |
+| 📱 **生命周期监控** | `life.fg/bg/in_/out`，自动记录日志 + 面包屑，排查前后台切换引发的状态异常 | ✅ JS | ✅ Android | ✅ iOS |
 
 ### 面向人群
 
@@ -145,6 +145,9 @@ BR.snapshot({ orderId: 'ORD-999', step: 'payment' })
 
 // 隐私脱敏 — 默认拦截 password/token/手机号/邮箱等
 // 自定义规则: BR.sanitizer.addRule(/secretKey=\w+/g)
+
+// 生命周期 — 自动日志+面包屑
+BR.life.fg(); BR.life.bg(); BR.life.in_('pages/home'); BR.life.out('pages/home')
 
 // 面包屑自动埋点：life.fg/bg/in_/out + net:change 自动记录
 
@@ -217,6 +220,16 @@ BugReport.net.req("POST", "/api/login", 500, 1234, 0)
 // 性能
 BugReport.perf.start("loadData")
 val ms = BugReport.perf.end("loadData")
+
+// 面包屑 + 快照
+BugReport.crumb("checkout", "User clicked pay")
+BugReport.snapshot(mapOf("orderId" to "ORD-999", "step" to "payment"))
+
+// 隐私脱敏（默认已拦截 password/token/手机号/邮箱）
+BugReport.sanitizer.addRule(Regex("secretKey=\\w+"))
+
+// 生命周期（自动日志+面包屑）
+BugReport.life.fg(); BugReport.life.bg(); BugReport.life.in_("MainActivity")
 
 // 查询 & 导出
 val errors = BugReport.query(minLevel = 4)

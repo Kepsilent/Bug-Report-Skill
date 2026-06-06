@@ -83,6 +83,50 @@ object BugReport {
     // Latest state snapshot
     private var stateSnapshot: Any? = null
 
+    // ---- Sanitizer ----
+    private val sanitizerRules = mutableListOf<Regex>(
+        Regex("\\d{11}"),                                            // phone numbers
+        Regex("\\d{17,18}"),                                         // ID card numbers
+        Regex("[a-zA-Z0-9._%+\\-]+@[a-zA-Z0-9.\\-]+\\.[a-zA-Z]{2,}") // emails
+    )
+    private val sensitiveKeys = setOf(
+        "password","passwd","pwd","secret","token","authorization","auth",
+        "api_key","apikey","accessToken","refreshToken","credential","credentials","privateKey","apiKey"
+    )
+
+    internal fun sanitize(value: Any?): Any? {
+        if (value == null) return null
+        if (value is String) {
+            var s = value
+            for (r in sanitizerRules) { s = r.replace(s, "***") }
+            return s
+        }
+        if (value is List<*>) { return value.map { sanitize(it) } }
+        if (value is Map<*, *>) {
+            val out = mutableMapOf<String, Any?>()
+            for ((k, v) in value) {
+                val key = k.toString()
+                out[key] = if (sensitiveKeys.contains(key)) "***" else sanitize(v)
+            }
+            return out
+        }
+        return value
+    }
+
+    // ---- Sanitizer API ----
+    object sanitizer {
+        fun addRule(regex: Regex) { sanitizerRules.add(regex) }
+        fun rules(): List<Regex> = sanitizerRules.toList()
+    }
+
+    // ---- Lifecycle sub-object ----
+    object life {
+        fun fg() { crumb("life:foreground", ""); info("life:foreground", "") }
+        fun bg() { crumb("life:background", ""); info("life:background", "") }
+        fun in_(page: String) { crumb("life:page-in", page); d("life:page-in", page) }
+        fun out(page: String) { crumb("life:page-out", page); d("life:page-out", page) }
+    }
+
     // ---- Network sub-object ----
     object net {
         fun req(method: String, url: String, status: Int, durMs: Long, sizeBytes: Long = 0): LogEntry {
@@ -94,21 +138,21 @@ object BugReport {
                 else LogLevel.INFO.value,
                 LogCategory.NETWORK.value,
                 "net:req",
-                "$method ${url.takeLast(80)}",
-                mapOf("method" to method, "url" to url, "status" to status, "duration" to durMs, "size" to sizeBytes)
+                "$method ${sanitize(url).toString().takeLast(80)}",
+                mapOf("method" to method, "url" to sanitize(url), "status" to status, "duration" to durMs, "size" to sizeBytes)
             )
         }
 
         fun err(url: String, error: String): LogEntry {
-            return onLog(LogLevel.ERROR.value, LogCategory.NETWORK.value, "net:err", error, mapOf("url" to url))
+            return onLog(LogLevel.ERROR.value, LogCategory.NETWORK.value, "net:err", sanitize(error) as? String ?: error, mapOf("url" to sanitize(url)))
         }
 
         fun slow(url: String, ms: Long): LogEntry {
-            return onLog(LogLevel.WARN.value, LogCategory.NETWORK.value, "net:slow", "${ms}ms ${url.takeLast(80)}", mapOf("url" to url, "duration" to ms))
+            return onLog(LogLevel.WARN.value, LogCategory.NETWORK.value, "net:slow", "${ms}ms ${sanitize(url).toString().takeLast(80)}", mapOf("url" to sanitize(url), "duration" to ms))
         }
 
         fun timeout(url: String, ms: Long?): LogEntry {
-            return onLog(LogLevel.ERROR.value, LogCategory.NETWORK.value, "net:timeout", "${ms ?: "?"}ms", mapOf("url" to url))
+            return onLog(LogLevel.ERROR.value, LogCategory.NETWORK.value, "net:timeout", "${ms ?: "?"}ms", mapOf("url" to sanitize(url)))
         }
     }
 
@@ -289,13 +333,18 @@ object BugReport {
         }
         if (level < cfg.minLevel) return LogEntry(0, 0, "", 0, "", "", "", "", null, "", null, null)
 
+        // Sanitize sensitive data in memory before logging
+        @Suppress("UNCHECKED_CAST")
+        val safeExtra = sanitize(extra) as? Map<String, Any?>
+        val safeMsg = sanitize(msg) as? String ?: msg
+
         seq++
         val now = System.currentTimeMillis()
         // On FATAL: auto-attach breadcrumbs + snapshot into extra
-        var finalExtra = extra
+        var finalExtra = safeExtra
         if (level == LogLevel.FATAL.value) {
             val merged = mutableMapOf<String, Any?>()
-            extra?.forEach { (k, v) -> merged[k] = v }
+            safeExtra?.forEach { (k, v) -> merged[k] = v }
             if (crumbs.isNotEmpty()) merged["breadcrumbs"] = crumbs.toList()
             if (stateSnapshot != null) merged["snapshot"] = stateSnapshot
             finalExtra = merged
@@ -308,8 +357,8 @@ object BugReport {
             levelLabel = LogLevel.from(level).label,
             cat = category,
             tag = tag,
-            msg = msg,
-            stack = finalExtra?.get("stack") as? String ?: extra?.get("stack") as? String ?: "",
+            msg = safeMsg,
+            stack = finalExtra?.get("stack") as? String ?: safeExtra?.get("stack") as? String ?: "",
             page = "",
             extra = finalExtra,
             device = deviceSnapshot

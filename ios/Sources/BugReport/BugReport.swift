@@ -64,28 +64,80 @@ public class BugReport {
     // Latest state snapshot
     private var stateSnapshot: AnyCodable? = nil
 
+    // MARK: - Sanitizer
+    private var sanitizerRules: [NSRegularExpression] = [
+        try! NSRegularExpression(pattern: "\\d{11}", options: []),
+        try! NSRegularExpression(pattern: "\\d{17,18}", options: []),
+        try! NSRegularExpression(pattern: "[a-zA-Z0-9._%+\\-]+@[a-zA-Z0-9.\\-]+\\.[a-zA-Z]{2,}", options: [])
+    ]
+    private let sensitiveKeys: Set<String> = [
+        "password","passwd","pwd","secret","token","authorization","auth",
+        "api_key","apikey","accessToken","refreshToken","credential","credentials","privateKey","apiKey"
+    ]
+
+    private func sanitize(_ value: Any?) -> Any? {
+        guard let value = value else { return nil }
+        if let s = value as? String {
+            var str = s
+            for rule in sanitizerRules { str = rule.stringByReplacingMatches(in: str, range: NSRange(str.startIndex..., in: str), withTemplate: "***") }
+            return str
+        }
+        if let arr = value as? [Any] { return arr.map { sanitize($0) } }
+        if let dict = value as? [String: Any] {
+            var out = [String: Any]()
+            for (k, v) in dict {
+                out[k] = sensitiveKeys.contains(k) ? "***" : sanitize(v)
+            }
+            return out
+        }
+        return value
+    }
+
+    // MARK: - Sanitizer API
+    public struct SanitizerAPI {
+        public func addRule(_ pattern: String) {
+            if let regex = try? NSRegularExpression(pattern: pattern, options: []) {
+                shared.sanitizerRules.append(regex)
+            }
+        }
+        public func rules() -> [String] { shared.sanitizerRules.map { $0.pattern } }
+    }
+    public static let sanitizer = SanitizerAPI()
+
+    // MARK: - Lifecycle
+    public static let life = LifecycleAPI()
+    public struct LifecycleAPI {
+        public func fg() { crumb("life:foreground", ""); info("life:foreground", "") }
+        public func bg() { crumb("life:background", ""); info("life:background", "") }
+        public func in_(_ page: String) { crumb("life:page-in", page); d("life:page-in", page) }
+        public func out(_ page: String) { crumb("life:page-out", page); d("life:page-out", page) }
+    }
+
     // MARK: - Net sub-object
     public struct NetSubsystem {
         public func req(method: String, url: String, status: Int, dur: Int64, size: Int64 = 0) {
+            let safeUrl = shared.sanitize(url) as? String ?? url
             let lvl = status >= 500 ? LogLevel.error.rawValue :
                        status >= 400 ? LogLevel.warn.rawValue :
                        dur > 10000 ? LogLevel.error.rawValue :
                        dur > 3000 ? LogLevel.warn.rawValue : LogLevel.info.rawValue
-            shared.emit(lvl, cat: .NETWORK, tag: "net:req", msg: "\(method) \(String(url.suffix(80)))",
-                        stack: "", extra: ["method": AnyCodable(method), "url": AnyCodable(url),
+            shared.emit(lvl, cat: .NETWORK, tag: "net:req", msg: "\(method) \(String(safeUrl.suffix(80)))",
+                        stack: "", extra: ["method": AnyCodable(method), "url": AnyCodable(safeUrl),
                                            "status": AnyCodable(status), "duration": AnyCodable(dur), "size": AnyCodable(size)])
         }
         public func err(url: String, error: String) {
-            shared.emit(LogLevel.error.rawValue, cat: .NETWORK, tag: "net:err", msg: error,
-                        stack: "", extra: ["url": AnyCodable(url)])
+            shared.emit(LogLevel.error.rawValue, cat: .NETWORK, tag: "net:err",
+                        msg: shared.sanitize(error) as? String ?? error,
+                        stack: "", extra: ["url": AnyCodable(shared.sanitize(url) as? String ?? url)])
         }
         public func slow(url: String, ms: Int64) {
-            shared.emit(LogLevel.warn.rawValue, cat: .NETWORK, tag: "net:slow", msg: "\(ms)ms \(String(url.suffix(80)))",
-                        stack: "", extra: ["url": AnyCodable(url), "duration": AnyCodable(ms)])
+            let safeUrl = shared.sanitize(url) as? String ?? url
+            shared.emit(LogLevel.warn.rawValue, cat: .NETWORK, tag: "net:slow", msg: "\(ms)ms \(String(safeUrl.suffix(80)))",
+                        stack: "", extra: ["url": AnyCodable(safeUrl), "duration": AnyCodable(ms)])
         }
         public func timeout(url: String, ms: Int64?) {
             shared.emit(LogLevel.error.rawValue, cat: .NETWORK, tag: "net:timeout", msg: "\(ms ?? 0)ms",
-                        stack: "", extra: ["url": AnyCodable(url)])
+                        stack: "", extra: ["url": AnyCodable(shared.sanitize(url) as? String ?? url)])
         }
     }
     public let net = NetSubsystem()
@@ -252,13 +304,18 @@ public class BugReport {
         defer { lock.unlock() }
 
         guard ok, level >= cfg.minLevel else { return }
+
+        // Sanitize sensitive data in memory before logging
+        let safeMsg = (sanitize(msg) as? String) ?? msg
+        let safeExtra = sanitize(extra) as? [String: AnyCodable]
+
         seq += 1
         let now = Int64(Date().timeIntervalSince1970 * 1000)
 
         // On FATAL: auto-attach breadcrumbs + snapshot
-        var finalExtra = extra
+        var finalExtra = safeExtra
         if level == LogLevel.fatal.rawValue {
-            var merged = extra ?? [:]
+            var merged = safeExtra ?? [:]
             if !crumbs.isEmpty { merged["breadcrumbs"] = AnyCodable(crumbs) }
             if let snap = stateSnapshot { merged["snapshot"] = snap }
             finalExtra = merged
@@ -267,7 +324,7 @@ public class BugReport {
         let entry = LogEntry(
             id: seq, ts: now, time: dateFormatter.string(from: Date()),
             level: level, levelLabel: LogLevel(rawValue: level)?.label ?? "UNKNOWN",
-            cat: cat.rawValue, tag: tag, msg: msg, stack: stack, page: "", extra: finalExtra, device: deviceSnapshot
+            cat: cat.rawValue, tag: tag, msg: safeMsg, stack: stack, page: "", extra: finalExtra, device: deviceSnapshot
         )
 
         logs.append(entry)
