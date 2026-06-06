@@ -57,15 +57,37 @@ https://github.com/Kepsilent/Bug-Report-Skill
 
 ## 这是什么
 
-**BRS (Bug Report System)** v3.0 — AI 诊断技能 + 多语言日志库的集合体：
+**BRS (Bug Report System)** v3.0 — 一款**开源、完全免费**的跨平台崩溃监控与 AI 智能诊断系统。
 
-- **Skill** — 教会 AI 如何诊断 Bug（5 阶段：收集→分析→追踪→报告→修复）
-- **日志库** — 自动采集崩溃/网络/性能/面包屑数据，一行代码接入
-- **面包屑 (Breadcrumbs)** — 崩溃前 50 步操作自动记录，FIFO 定长队列
-- **状态快照 (Snapshot)** — 开发者在关键节点保存业务状态，崩溃时自动打包
-- **隐私脱敏** — 网络拦截器前置清洗，敏感字段在内存中替换为 `***`
-- **可视化面板** — Chrome DevTools 风格 HTML 面板，WebView 跨平台通用
-- **MCP Server** — AI 可通过 MCP 协议直接查询日志、获取崩溃报告
+无论是个人开发者（C 端）还是企业团队（B 端），只需一行代码接入，即可获得企业级的日志采集、崩溃追踪、性能监控和 AI 自动诊断能力。
+
+> 💡 永久 MIT 开源，无付费墙，无遥测回传，数据 100% 留在本地。
+
+### 核心能力
+
+| 功能 | 说明 |
+|------|------|
+| 📋 **智能日志采集** | 6 级日志（V/D/I/W/E/F），12 种分类，自动适配 uni-app / 微信 / Android / iOS / React Native / Node / Electron |
+| 🍞 **面包屑追踪** | FIFO 50 步定长队列，自动记录路由跳转、前后台切换、网络变化等关键操作，崩溃时精准还原用户路径 |
+| 📸 **状态快照** | `BR.snapshot(data)` 保存业务状态，崩溃时自动注入日志，一眼看清崩溃时刻的上下文 |
+| 🌐 **网络自动拦截** | Monkey-patch fetch/XHR（JS）、OkHttp Interceptor（Android）、URLProtocol（iOS），零手动接入 |
+| 🔒 **隐私脱敏** | 拦截器前置内存清洗，password/token/手机号/邮箱/身份证匹配即替换为 `***`，不触碰 I/O |
+| 📊 **跨平台可视化面板** | Chrome DevTools 风格纯 HTML，WebView 加载即用，Android/iOS/Electron/浏览器全平台统一 |
+| 🧠 **AI 智能诊断** | 5 阶段诊断流程（收集→分析→追踪→报告→修复），Claude Code / Reasonix / Cursor / Copilot 等均可调用 |
+| 🔌 **MCP Server** | `get_latest_crash` + `search_logs`，AI Agent 通过标准 MCP 协议直接查询日志 JSON |
+| 🚨 **崩溃自动捕获** | 全局 JS 异常 + Promise 未捕获 + Native 崩溃（Android/iOS），自动持久化到本地存储 |
+| ⚡ **性能追踪** | `BR.perf.start/end` 计时器，超阈值自动标 WARN，支持自定义阈值 |
+| 📱 **全生命周期监控** | App 前台/后台、页面进入/离开自动记录，排查前后台切换引发的状态异常 |
+
+### 面向人群
+
+| | C 端（个人开发者） | B 端（企业团队） |
+|------|------|------|
+| **成本** | 永久免费 | 永久免费，无 seat 限制 |
+| **部署** | 一行 `BR.init()` | 集成 CI，私有化部署 |
+| **数据** | 100% 本地存储 | 可接入自有日志后端 |
+| **AI 诊断** | Claude Code / Reasonix / Cursor 等随选 | MCP Server 对接内部 AI 平台 |
+| **定制** | MIT 协议随意改 | 可 fork 二开，无法律风险 |
 
 > 💡 所有 AI Agent 共享同一份 [SKILL.md](SKILL.md)，通过 [AGENTS.md](AGENTS.md) 自动发现。
 
@@ -250,6 +272,38 @@ Chrome DevTools 风格纯 HTML 面板，WebView 跨平台通用：
 | uni-app / H5 / 小程序 | `log-viewer-common.vue` (legacy) |
 | 纯 Web / H5 | `log-viewer.vue` (legacy) |
 | Android 原生 | `LogViewerActivity.kt` |
+
+---
+
+## MCP Server
+
+BRS 内置 MCP (Model Context Protocol) Server，让 AI Agent 通过标准协议直接查询日志：
+
+```bash
+# 启动 MCP Server（stdio JSON-RPC 传输，零依赖）
+node mcp-server.js --dir ./bugs/
+```
+
+### 可用 Tools
+
+| Tool | 说明 | 示例 |
+|------|------|------|
+| `get_latest_crash` | 获取最近一次崩溃完整报告（含面包屑、快照、崩溃前 30 秒上下文） | → 直接返回结构化 JSON |
+| `search_logs` | 按级别/分类/标签/关键词/时间范围搜索日志 | `{minLevel:4, cat:"NETWORK", limit:50}` |
+
+### 接入 AI Agent
+
+```json
+// Reasonix / Claude Code / Cursor 的 MCP 配置
+{
+  "mcpServers": {
+    "brs": {
+      "command": "node",
+      "args": ["mcp-server.js", "--dir", "./bugs/"]
+    }
+  }
+}
+```
 
 ---
 
