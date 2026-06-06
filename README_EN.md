@@ -7,7 +7,7 @@
 [![uni-app](https://img.shields.io/badge/uni--app-✓-brightgreen)](#hbuilderx--js)
 [![MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 [![Agents](https://img.shields.io/badge/AI%20Agents-Claude%20Code%20%7C%20Reasonix%20%7C%20Cursor%20%7C%20Codex%20%7C%20Copilot%20%7C%20Windsurf%20%7C%20Gemini%20CLI%20%7C%20...-6e40c9)](https://github.com/Kepsilent/Bug-Report-Skill)
-[![Tests](https://img.shields.io/badge/Tests-122%2F122%20passed-green)](https://github.com/Kepsilent/Bug-Report-Skill/blob/main/TEST.md)
+[![Tests](https://img.shields.io/badge/Tests-122%2F122%20passed-green)](https://github.com/Kepsilent/Bug-Report-Skill/blob/main/test/TEST_EN.md)
 [![Platforms](https://img.shields.io/badge/Platforms-6%20verified-blue)](#-test-results)
 [![iOS](https://img.shields.io/badge/iOS-untested-lightgrey)]()
 
@@ -329,7 +329,7 @@ node mcp-server.js --dir ./bugs/
 | HTML Viewer | WebView panel | ✅ |
 | iOS (Xcode) | Swift compilation | ❓ Untested |
 
-> 💡 iOS SDK is fully implemented, awaiting community verification or Xcode build. Full test report → [TEST.md](TEST.md)
+> 💡 iOS SDK is fully implemented, awaiting community verification or Xcode build. Full test report → [test/TEST_EN.md](test/TEST_EN.md)
 
 ---
 
