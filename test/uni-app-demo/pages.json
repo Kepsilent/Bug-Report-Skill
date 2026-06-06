@@ -2,11 +2,11 @@
   "pages": [
     {
       "path": "pages/index/index",
-      "style": { "navigationBarTitleText": "BugReport Test" }
+      "style": { "navigationBarTitleText": "BRS v3.0 Test" }
     },
     {
       "path": "pages/debug-log/debug-log",
-      "style": { "navigationBarTitleText": "Log Viewer" }
+      "style": { "navigationBarTitleText": "BRS Log Viewer" }
     }
   ]
 }

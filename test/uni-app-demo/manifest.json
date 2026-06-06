@@ -1,7 +1,7 @@
 {
   "name": "BugReportTest",
   "appid": "__test__",
-  "description": "BugReport v2.1 uni-app test demo",
+  "description": "BRS v3.0 uni-app test demo",
   "versionName": "1.0.0",
   "versionCode": "100",
   "transformPx": false,

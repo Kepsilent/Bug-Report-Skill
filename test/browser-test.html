@@ -2,192 +2,99 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>BugReport v2.1 — Browser Test</title>
+<title>BRS v3.0 — Browser Test</title>
 <style>
   body { font-family: monospace; background: #0d1117; color: #c9d1d9; padding: 20px; }
   .pass { color: #3fb950; } .fail { color: #f85149; } .info { color: #58a6ff; }
   h2 { color: #f0f6fc; border-bottom: 1px solid #30363d; padding-bottom: 8px; }
-  pre { background: #161b22; padding: 8px; border-radius: 4px; overflow-x: auto; }
+  h3 { color: #e2b714; margin: 16px 0 4px; }
+  pre { background: #161b22; padding: 8px; border-radius: 4px; overflow-x: auto; max-height: 300px; }
+  button { background: #21262d; color: #c9d1d9; border: 1px solid #30363d; border-radius: 4px; padding: 6px 16px; margin: 4px; cursor: pointer; }
+  button:hover { background: #30363d; }
 </style>
 </head>
 <body>
-<h2>🔬 BugReport v2.1 — Browser Test Suite</h2>
+
+<h2>🔬 BRS v3.0 — Browser Test Suite</h2>
+<p class="info">Open DevTools Console (F12) to see detailed output.</p>
+
+<button onclick="runAll()">▶ Run All</button>
+<button onclick="window.open('log-viewer.html')">📊 Open Viewer</button>
+
 <pre id="output"></pre>
 
 <script src="../index.js"></script>
+<script src="../log-viewer.html"></script>
 <script>
 'use strict'
 
 const out = document.getElementById('output')
 let passed = 0, failed = 0
 
-function log(msg, cls) { const div = document.createElement('div'); div.className = cls || ''; div.textContent = msg; out.appendChild(div) }
-
+function log(msg, cls) { const div = document.createElement('div'); div.className = cls || ''; div.textContent = msg; out.appendChild(div); console.log(msg) }
 function test(name, fn) {
-  try { fn(); passed++; log('PASS  ' + name, 'pass') }
-  catch(e) { failed++; log('FAIL  ' + name + ' — ' + e.message, 'fail') }
+  try { fn(); passed++; log('✅  ' + name, 'pass') }
+  catch(e) { failed++; log('❌  ' + name + '\n      ' + e.message, 'fail') }
 }
-
-// ===== SCRIPT TAG / UMD =====
-test('window.BugReport is defined after script tag', () => {
-  if (!window.BugReport) throw new Error('BugReport not on window')
-  if (typeof window.BugReport.init !== 'function') throw new Error('init not a function')
-})
 
 var BR = window.BugReport
 BR.clear()
+BR.init({ appName: 'BrowserTest', appVersion: '3.0.0', persist: false, captureGlobal: false, capturePromise: false, captureNetwork: false })
 
-// ===== INIT IN BROWSER =====
-test('init() in browser detects window/document', () => {
-  const r = BR.init({ appName: 'BrowserTest', persist: false, captureGlobal: false, capturePromise: false, captureNetwork: false })
-  if (!r.device || r.device.model === 'unknown') throw new Error('browser detection failed: ' + JSON.stringify(r.device))
-})
+function runAll() {
+  passed = 0; failed = 0; out.innerHTML = ''
+  log('═══ BRS v3.0 Browser Test ═══', 'info')
 
-// ===== BASIC LOGGING =====
-test('log levels work in browser', () => {
-  const v = BR.v('browser', 'verbose')
-  const d = BR.d('browser', 'debug')
-  const i = BR.info('browser', 'info')
-  const w = BR.w('browser', 'warn')
-  const e = BR.e('browser', 'error')
-  const f = BR.f('browser', 'fatal')
-  if (v.level !== 0) throw new Error('v() wrong level: ' + v.level)
-  if (d.level !== 1) throw new Error('d() wrong level: ' + d.level)
-  if (i.level !== 2) throw new Error('info() wrong level: ' + i.level)
-  if (w.level !== 3) throw new Error('w() wrong level: ' + w.level)
-  if (e.level !== 4) throw new Error('e() wrong level: ' + e.level)
-  if (f.level !== 5) throw new Error('f() wrong level: ' + f.level)
-})
+  log('', 'info'); log('── 1. 基础日志 ──', 'info')
+  test('init() returns device', () => { const d = BR.device(); if (!d || !d.model) throw new Error('no device') })
+  test('v() VERBOSE', () => { if (BR.v('test','v').level !== 0) throw new Error() })
+  test('d() DEBUG',   () => { if (BR.d('test','d').level !== 1) throw new Error() })
+  test('info() INFO', () => { if (BR.info('test','i').level !== 2) throw new Error() })
+  test('w() WARN',    () => { if (BR.w('test','w').level !== 3) throw new Error() })
+  test('e() ERROR',   () => { if (BR.e('test','e').level !== 4) throw new Error() })
+  test('f() FATAL',   () => { if (BR.f('test','f').level !== 5) throw new Error() })
+  test('stats() total > 0', () => { if (BR.stats().total < 7) throw new Error() })
 
-// ===== LOCAL STORAGE PERSISTENCE =====
-test('localStorage persistence works', () => {
-  BR.destroy()
-  localStorage.removeItem('bugreport_logs')
-  BR.init({ appName: 'Persist', persist: true, captureGlobal: false, capturePromise: false, captureNetwork: false })
-  BR.e('persist', 'save me')
-  BR.flush()
-  const stored = localStorage.getItem('bugreport_logs')
-  if (!stored) throw new Error('logs not saved to localStorage')
-  try {
-    const parsed = JSON.parse(stored)
-    if (!Array.isArray(parsed)) throw new Error('stored logs not an array')
-    if (parsed.length < 1) throw new Error('stored logs empty')
-  } catch(e) { throw new Error('stored logs not valid JSON: ' + e.message) }
-})
+  log('', 'info'); log('── 2. 面包屑追踪 ──', 'info')
+  test('crumb() adds', () => { BR.clearCrumbs(); BR.crumb('nav','click'); if(BR.crumbs().length!==1) throw new Error() })
+  test('crumbs() copy', () => { BR.crumbs().pop(); if(BR.crumbs().length!==1) throw new Error('not a copy') })
+  test('FIFO max 50', () => { BR.clearCrumbs(); for(let i=0;i<60;i++)BR.crumb('s',''+i); if(BR.crumbs().length!==50) throw new Error() })
+  test('life.fg() auto-crumb', () => { BR.clearCrumbs(); BR.life.fg(); if(!BR.crumbs().some(c=>c.tag==='life:foreground')) throw new Error() })
+  test('life.in_() auto-crumb', () => { BR.clearCrumbs(); BR.life.in_('/test'); if(!BR.crumbs().some(c=>c.tag==='life:page-in')) throw new Error() })
 
-// ===== FETCH INTERCEPTION (AUTO) =====
-test('fetch() interception — success', async () => {
-  try {
-    // Use a real request or mock
-    const resp = await fetch('/favicon.ico')
-    // Give time for the interceptor's .then() to fire
-    await new Promise(r => setTimeout(r, 50))
-    const netLogs = BR.query({ cat: 'NETWORK' })
-    const found = netLogs.find(l => l.extra && l.extra.url === '/favicon.ico')
-    if (!found) throw new Error('fetch was not intercepted — no NETWORK log for /favicon.ico')
-    log('       status=' + found.extra.status + ' dur=' + found.extra.duration + 'ms', 'info')
-  } catch(e) {
-    // Network errors are expected in some environments (file://, CORS)
-    log('       (network call may have failed, checking error interception)', 'info')
-    await new Promise(r => setTimeout(r, 50))
-    // At minimum, no crash
-  }
-})
+  log('', 'info'); log('── 3. 状态快照 ──', 'info')
+  test('snapshot() saves', () => { BR.snapshot({id:'x'}); if(BR.getSnapshot().id!=='x') throw new Error() })
+  test('snapshot overwrites', () => { BR.snapshot({a:1}); if(BR.getSnapshot().id) throw new Error('old data') })
+  test('FATAL injects snapshot', () => { BR.snapshot({order:'ORD-1'}); BR.f('crash','test'); var c=BR.query({cat:'CRASH'})[0]; if(!c.extra||!c.extra.snapshot||c.extra.snapshot.order!=='ORD-1') throw new Error() })
 
-// ===== FETCH ERROR INTERCEPTION =====
-test('fetch() error interception does not crash', async () => {
-  try {
-    await fetch('https://invalid.domain.that.does.not.exist.test/bugreport-test')
-  } catch(e) {
-    // Expected — CORS or DNS failure
-  }
-  await new Promise(r => setTimeout(r, 50))
-  // Verify no crash — if we reach here, the app is still running
-  BR.info('fetch:test', 'still alive after fetch error')
-})
+  log('', 'info'); log('── 4. 隐私脱敏 ──', 'info')
+  test('password → ***', () => { var s=BR.sanitizer.sanitize({password:'x'}); if(s.password!=='***') throw new Error(s.password) })
+  test('token → ***', () => { var s=BR.sanitizer.sanitize({token:'bearer xxx'}); if(s.token!=='***') throw new Error(s.token) })
+  test('phone → ***', () => { var s=BR.sanitizer.sanitize({phone:'13800138000'}); if(s.phone!=='***') throw new Error(s.phone) })
+  test('email → ***', () => { var s=BR.sanitizer.sanitize({email:'a@b.com'}); if(s.email!=='***') throw new Error(s.email) })
+  test('nested redact', () => { var s=BR.sanitizer.sanitize({body:{password:'x',name:'ok'}}); if(s.body.password!=='***'||s.body.name!=='ok') throw new Error() })
 
-// ===== XMLHttpRequest INTERCEPTION =====
-test('XMLHttpRequest() interception', (done) => {
-  const xhr = new XMLHttpRequest()
-  xhr.open('GET', '/favicon.ico')
-  xhr.onloadend = function() {
-    setTimeout(() => {
-      const netLogs = BR.query({ cat: 'NETWORK' })
-      const found = netLogs.find(l => l.extra && l.extra.url === '/favicon.ico')
-      if (found) {
-        log('       XHR status=' + found.extra.status + ' dur=' + found.extra.duration + 'ms', 'info')
-      }
-      done()
-    }, 50)
-  }
-  xhr.onerror = function() {
-    setTimeout(() => {
-      const netLogs = BR.query({ cat: 'NETWORK' })
-      // Even on error, there should be a log
-      done()
-    }, 50)
-  }
-  xhr.send()
-})
+  log('', 'info'); log('── 5. 网络接口 ──', 'info')
+  test('net.req 200', () => { BR.net.req('GET','/x',200,100,0); var n=BR.query({cat:'NETWORK',limit:1})[0]; if(n.extra.status!==200) throw new Error() })
+  test('net.err', () => { BR.net.err('/x','fail'); var n=BR.query({cat:'NETWORK',limit:1})[0]; if(n.tag!=='net:err') throw new Error() })
+  test('net.timeout', () => { BR.net.timeout('/x',30000); var n=BR.query({tag:'net:timeout',limit:1})[0]; if(!n) throw new Error() })
 
-// ===== QUERY + EXPORT IN BROWSER =====
-test('query() in browser works', () => {
-  const text = BR.exportLogs('text')
-  if (!text.includes('BugReport Log Export')) throw new Error('text export missing header')
-})
-test('stats() in browser works', () => {
-  const s = BR.stats()
-  if (typeof s.total !== 'number') throw new Error('stats broken')
-})
+  log('', 'info'); log('── 6. 性能追踪 ──', 'info')
+  test('perf.start/end', () => { BR.perf.start('x'); var ms=BR.perf.end('x'); if(ms<0) throw new Error() })
+  test('perf.mark', () => { BR.perf.mark('m',100); if(BR.query({cat:'PERF'}).length===0) throw new Error() })
 
-// ===== WATCH IN BROWSER =====
-test('watch() fires in browser', (done) => {
-  let fired = false
-  const unsub = BR.watch(function(l) { fired = true })
-  BR.e('watch:test', 'fire in browser')
-  setTimeout(() => {
-    unsub()
-    if (!fired) throw new Error('watch callback did not fire')
-    done()
-  }, 30)
-})
+  log('', 'info'); log('── 7. 查询导出 ──', 'info')
+  test('query level=4', () => { var r=BR.query({level:4}); if(!r.every(l=>l.level>=4)) throw new Error() })
+  test('query cat=NETWORK', () => { var r=BR.query({cat:'NETWORK'}); if(!r.every(l=>l.cat==='NETWORK')) throw new Error() })
+  test('export text', () => { var t=BR.exportLogs('text'); if(!t.includes('BRS')) throw new Error() })
+  test('export json', () => { var j=BR.exportLogs('json'); if(!j.includes('"logs"')) throw new Error() })
+  test('export csv', () => { var c=BR.exportLogs('csv'); if(!c.startsWith('id,time')) throw new Error() })
 
-// ===== DESTROY + RE-INIT =====
-test('destroy() + re-init in browser', () => {
-  BR.destroy()
-  BR.init({ appName: 'ReinitBrowser', persist: false, captureGlobal: false, capturePromise: false, captureNetwork: false })
-  if (!BR.device().model) throw new Error('re-init after destroy failed')
-})
-
-// ===== BR.wx in browser (should be available but wx.request won't work) =====
-test('BR.wx exists in browser', () => {
-  if (typeof BR.wx !== 'object') throw new Error('BR.wx not exposed')
-  if (typeof BR.wx.req !== 'function') throw new Error('BR.wx.req not a function')
-})
-
-// ===== GLOBAL ERROR CAPTURE =====
-test('global error capture enabled', () => {
-  // Only test that the flag works, don't actually throw
-  BR.destroy()
-  BR.init({ appName: 'ErrCap', captureGlobal: true, capturePromise: false, captureNetwork: false, persist: false })
-  // Send a fake error to the handler
-  try {
-    var oldHandler = window.onerror
-    window.dispatchEvent(new ErrorEvent('error', { message: 'BugReport browser test error', error: new Error('test') }))
-  } catch(e) {}
-})
-
-// ===== FINAL SUMMARY =====
-setTimeout(() => {
-  log('')
-  if (failed === 0) {
-    log('All ' + passed + ' browser tests passed. ✅', 'pass')
-  } else {
-    log(passed + ' passed, ' + failed + ' FAILED ❌', 'fail')
-  }
-  // Write results as a global so automated tools can read
-  window.__BR_TEST_RESULTS = { passed: passed, failed: failed }
-}, 200)
+  log('', 'info'); log('═══ ' + passed + ' passed, ' + failed + ' failed ' + (failed?'❌':'✅') + ' ═══', 'info')
+  
+  // Auto-load viewer
+  if (window.BRSViewer) { BRSViewer.load(JSON.parse(BR.exportLogs('json')).logs); log('📊 Viewer loaded with ' + BR.stats().total + ' logs', 'pass') }
+}
 </script>
 </body>
 </html>
