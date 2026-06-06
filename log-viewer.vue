@@ -189,7 +189,7 @@ var T = {
     no_errors: '暂无错误', no_warns: '暂无警告', no_crashes: '暂无崩溃',
     no_logs: '暂无日志', no_crumbs: '暂无面包屑数据',
     logs: '条日志', uptime: '运行时长',
-    copy_text: '复制文本', copy_json: '复制JSON', clear: '清空',
+    copy_text: '文本', copy_json: 'JSON', clear: '清空',
     exp_title: '导出日志', exp_text: '文本格式', exp_text_desc: '可读文本，适合粘贴分享',
     exp_json: 'JSON格式', exp_json_desc: '结构化数据，适合程序分析',
     exp_csv: 'CSV格式', exp_csv_desc: '电子表格兼容格式',
@@ -212,7 +212,7 @@ var T = {
     no_errors: 'No errors.', no_warns: 'No warnings.', no_crashes: 'No crashes.',
     no_logs: 'No logs.', no_crumbs: 'No breadcrumbs.',
     logs: 'logs', uptime: 'uptime',
-    copy_text: 'Copy Text', copy_json: 'Copy JSON', clear: 'Clear',
+    copy_text: 'Text', copy_json: 'JSON', clear: 'Clear',
     exp_title: 'Export Logs', exp_text: 'Text format', exp_text_desc: 'Human-readable, suitable for pasting',
     exp_json: 'JSON format', exp_json_desc: 'Structured data for AI analysis',
     exp_csv: 'CSV format', exp_csv_desc: 'Spreadsheet-compatible table',
@@ -345,7 +345,7 @@ export default {
 .br-btn-sm { padding: 2px 8px; font-size: 10px; }
 .br-btn-d { border-color: rgba(248,81,73,0.3); color: var(--red); }
 .br-btn-d:hover { background: rgba(248,81,73,0.1); }
-.br-stats { display: flex; gap: 14px; padding: 4px 16px; background: var(--bg1); border-bottom: 1px solid var(--border); font-family: 'SF Mono','Cascadia Code','Fira Code',monospace; font-size: 11px; flex-shrink: 0; }
+.br-stats { display: flex; gap: 14px; padding: 4px 16px; background: var(--bg1); font-family: 'SF Mono','Cascadia Code','Fira Code',monospace; font-size: 11px; }
 .br-stat { color: var(--fg1); cursor: pointer; }
 .br-stat-e { color: var(--red); } .br-stat-w { color: var(--orange); } .br-stat-n { color: var(--cyan); } .br-stat-p { color: var(--purple); } .br-stat-b { color: var(--green); }
 .br-stat-s { color: var(--fg2); margin-left: auto; }

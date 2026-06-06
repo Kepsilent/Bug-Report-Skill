@@ -223,7 +223,7 @@ var T = {
     no_errors: '暂无错误', no_warns: '暂无警告', no_crashes: '暂无崩溃',
     no_logs: '暂无日志', no_crumbs: '暂无面包屑数据',
     logs: '条日志', uptime: '运行时长',
-    copy_text: '复制文本', copy_json: '复制JSON', clear: '清空',
+    copy_text: '文本', copy_json: 'JSON', clear: '清空',
     exp_title: '导出日志',
     exp_text: '文本格式', exp_text_desc: '可读文本，适合粘贴分享',
     exp_json: 'JSON格式', exp_json_desc: '结构化数据，适合程序分析',
@@ -250,7 +250,7 @@ var T = {
     no_errors: 'No errors.', no_warns: 'No warnings.', no_crashes: 'No crashes.',
     no_logs: 'No logs.', no_crumbs: 'No breadcrumbs.',
     logs: 'logs', uptime: 'uptime',
-    copy_text: 'Copy Text', copy_json: 'Copy JSON', clear: 'Clear',
+    copy_text: 'Text', copy_json: 'JSON', clear: 'Clear',
     exp_title: 'Export Logs',
     exp_text: 'Text format', exp_text_desc: 'Human-readable, suitable for pasting',
     exp_json: 'JSON format', exp_json_desc: 'Structured data for AI analysis',
@@ -509,15 +509,15 @@ export default {
 /* Buttons */
 .br-btn { background: var(--bg2); border: 1px solid var(--border); border-radius: 8rpx; padding: 8rpx 24rpx; }
 .br-btn:active { background: #30363d; }
-.br-btn text { font-size: 22rpx; color: var(--fg0); }
-.br-btn-sm { padding: 4rpx 16rpx; }
-.br-btn-sm text { font-size: 20rpx; }
+.br-btn text { font-size: 22rpx; color: var(--fg0); white-space: nowrap; }
+.br-btn-sm { padding: 4rpx 12rpx; }
+.br-btn-sm text { font-size: 20rpx; white-space: nowrap; }
 .br-btn-d { border-color: rgba(248,81,73,0.3); }
 .br-btn-d text { color: var(--red); }
 .br-btn-d:active { background: rgba(248,81,73,0.1); }
 
 /* Stats */
-.br-stats { display: flex; padding: 12rpx 32rpx; background: var(--bg1); border-bottom: 1px solid var(--border); font-family: monospace; font-size: 22rpx; }
+.br-stats { display: flex; padding: 12rpx 32rpx; background: var(--bg1); font-family: monospace; font-size: 22rpx; }
 .br-stats > * { margin-right: 28rpx; }
 .br-stat { color: var(--fg1); }
 .br-stat-e { color: var(--red); }
@@ -610,11 +610,11 @@ export default {
 .br-empty { text-align: center; padding: 120rpx 40rpx; color: var(--fg2); font-size: 26rpx; }
 
 /* Status bar */
-.br-status { display: flex; align-items: center; padding: 4rpx 32rpx; background: var(--blue); min-height: 56rpx; flex-shrink: 0; }
+.br-status { display: flex; align-items: center; padding: 4rpx 24rpx; background: var(--blue); min-height: 48rpx; flex-shrink: 0; overflow: hidden; }
 .br-status > * { margin-right: 20rpx; }
 .br-status text { font-size: 22rpx; color: #fff; font-family: monospace; }
-.br-status-r { margin-left: auto; display: flex; }
-.br-status-r > * { margin-right: 12rpx; }
+.br-status-r { margin-left: auto; display: flex; flex-shrink: 0; }
+.br-status-r > * { margin-right: 8rpx; }
 .br-status .br-btn { background: rgba(255,255,255,0.15); border-color: rgba(255,255,255,0.2); }
 .br-status .br-btn text { color: #fff; }
 .br-status .br-btn:active { background: rgba(255,255,255,0.25); }
