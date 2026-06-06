@@ -12,34 +12,19 @@
 
 ---
 
-## 🚀 小白三分钟上手
-
-看不懂下面一堆技术名词？没关系，只要你会用 **AI Agent** 就行。
+## 🚀 安装方式（小白友好）
 
 支持所有主流 AI 编程助手：**Claude Code · Reasonix · Cursor · Gemini CLI · Codex · GitHub Copilot · Windsurf · Cline · Aider** …
 
-### 第 1 步：把链接发给你的 AI Agent
+复制下面这行话，丢给你的 AI Agent，就装好了：
 
-复制下面这个链接，粘贴给你的 AI Agent：
+> 帮我安装这个项目：https://github.com/Kepsilent/Bug-Report-Skill
 
-```
-https://github.com/Kepsilent/Bug-Report-Skill
-```
+👆 点右上角复制按钮，粘贴到你的 AI 对话框里，回车。Agent 会自动检查你的项目类型（uni-app？Android？小程序？），复制 SDK 文件、加初始化代码、注册路由，还会把诊断 Skill 装到自己身上。**当前会话立刻生效，不需要你做任何额外操作。**
 
-### 第 2 步：告诉它帮你装
+装好之后直接说人话就行：
 
-> "帮我安装这个 BugReport 到我的项目"
-
-你的 AI Agent 会自动读取项目的 [INSTALL.md](INSTALL.md)，识别你的项目类型（uni-app？Android Studio？小程序？），然后自动复制文件、加代码、注册路由，还会把诊断技能装到自己身上。**全程不用你动脑子。**
-
-### 第 3 步：装好了，直接用嘴说就行
-
-安装完成后，所有能力自动生效。你想用的时候直接用自然语言：
-
-> "帮我排查这个错误"
-> "分析一下这段日志"
-> "这个崩溃是什么原因？"
-> "/bug-report"
+> "帮我排查这个错误"   "分析一下这段日志"   "这个崩溃是什么原因？"   "/bug-report"
 
 你的 AI Agent 会自动激活诊断技能，帮你：
 
@@ -50,8 +35,7 @@ https://github.com/Kepsilent/Bug-Report-Skill
 - 🔧 **执行修复** — 根因明确时直接帮你改代码
 
 > 💡 不需要记任何命令，说人话就行。Skill 会根据你的描述自动激活。
-
-> 如果你是开发者想手动接入，往下翻各平台说明 ↓
+> 🖥️ 手动安装：也可以直接 `git clone https://github.com/Kepsilent/Bug-Report-Skill.git`，Agent 下次启动自动读取 `AGENTS.md`。
 
 ---
 
