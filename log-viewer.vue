@@ -9,6 +9,7 @@
         <span class="br-tb-stat">{{ errCount > 0 ? errCount + ' ' + t('issues') : t('ok') }}</span>
       </div>
       <div class="br-tb-right">
+        <button class="br-btn" v-if="!tabsCollapsed" @click="tabsCollapsed = true">▲ {{ t('collapse_filter') }}</button>
         <button class="br-btn" @click="autoRefresh = !autoRefresh">{{ autoRefresh ? t('pause') : t('live') }}</button>
         <button class="br-btn" @click="showSearch = !showSearch">{{ t('filter') }}</button>
         <button class="br-btn" @click="showExport = !showExport">{{ t('export') }}</button>
@@ -16,10 +17,12 @@
     </div>
 
     <!-- Collapsed bar (shown when tabs are hidden) -->
-    <div class="br-collapsed-bar" v-if="tabsCollapsed" @click="tabsCollapsed = false">
-      <span class="br-collapsed-title">{{ tabLabel() }}</span>
-      <span class="br-collapsed-count">{{ allLogs.length }} {{ t('logs') }}</span>
-      <span class="br-collapsed-chev">▼ {{ t('expand_filter') }}</span>
+    <div class="br-collapsed-bar" v-if="tabsCollapsed">
+      <div class="br-collapsed-info" @click="tabsCollapsed = false">
+        <span class="br-collapsed-title">{{ tabLabel() }}</span>
+        <span class="br-collapsed-count">{{ allLogs.length }} {{ t('logs') }}</span>
+      </div>
+      <button class="br-btn br-btn-sm" @click="tabsCollapsed = false">▼ {{ t('expand_filter') }}</button>
     </div>
 
     <!-- Quick Stats -->
@@ -194,7 +197,8 @@ var T = {
     cancel: '取消',
     copied: '已复制到剪贴板', copy_failed: '复制失败',
     clear_title: '清空日志', clear_content: '确定清空所有日志吗？',
-    expand_filter: '展开筛选栏'
+    expand_filter: '展开筛选栏',
+    collapse_filter: '收起筛选栏'
   },
   en: {
     ok: 'OK', issues: 'issues',
@@ -216,7 +220,8 @@ var T = {
     cancel: 'Cancel',
     copied: 'Copied to clipboard', copy_failed: 'Copy failed',
     clear_title: 'Clear Logs', clear_content: 'Clear all logs?',
-    expand_filter: 'Expand Filters'
+    expand_filter: 'Expand Filters',
+    collapse_filter: 'Collapse Filters'
   }
 }
 
@@ -330,8 +335,8 @@ export default {
 .br-dot-ok  { background: var(--green); }
 .br-dot-err { background: var(--red); box-shadow: 0 0 6px rgba(248,81,73,0.5); }
 
-.br-collapsed-bar { display: flex; align-items: center; padding: 5px 16px; background: var(--bg1); border-bottom: 1px solid var(--border); cursor: pointer; flex-shrink: 0; }
-.br-collapsed-bar:hover { background: var(--bg2); }
+.br-collapsed-bar { display: flex; align-items: center; justify-content: space-between; padding: 5px 16px; background: var(--bg1); border-bottom: 1px solid var(--border); flex-shrink: 0; }
+.br-collapsed-info { display: flex; align-items: center; flex: 1; cursor: pointer; }
 .br-collapsed-title { font-size: 12px; font-weight: 600; color: #f0f6fc; }
 .br-collapsed-count { font-size: 10px; color: var(--fg2); margin-left: 8px; }
 .br-collapsed-chev { font-size: 10px; color: var(--fg1); margin-left: auto; }

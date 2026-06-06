@@ -9,6 +9,9 @@
         <text class="br-tb-stat">{{ errCount > 0 ? errCount + ' ' + t('issues') : t('ok') }}</text>
       </view>
       <view class="br-tb-right">
+        <view class="br-btn" v-if="!tabsCollapsed" @tap="tabsCollapsed = true">
+          <text>▲ {{ t('collapse_filter') }}</text>
+        </view>
         <view class="br-btn" @tap="autoRefresh = !autoRefresh">
           <text>{{ autoRefresh ? t('pause') : t('live') }}</text>
         </view>
@@ -22,10 +25,14 @@
     </view>
 
     <!-- Collapsed bar (shown when tabs are hidden) -->
-    <view class="br-collapsed-bar" v-if="tabsCollapsed" @tap="tabsCollapsed = false">
-      <text class="br-collapsed-title">{{ tabLabel() }}</text>
-      <text class="br-collapsed-count">{{ allLogs.length }} {{ t('logs') }}</text>
-      <text class="br-collapsed-chev">▼ {{ t('expand_filter') }}</text>
+    <view class="br-collapsed-bar" v-if="tabsCollapsed">
+      <view class="br-collapsed-info" @tap="tabsCollapsed = false">
+        <text class="br-collapsed-title">{{ tabLabel() }}</text>
+        <text class="br-collapsed-count">{{ allLogs.length }} {{ t('logs') }}</text>
+      </view>
+      <view class="br-btn br-btn-sm" @tap="tabsCollapsed = false">
+        <text>▼ {{ t('expand_filter') }}</text>
+      </view>
     </view>
 
     <!-- Quick Stats -->
@@ -226,7 +233,8 @@ var T = {
     cancel: '取消',
     copied: '已复制到剪贴板', copy_failed: '复制失败',
     clear_title: '清空日志', clear_content: '确定清空所有日志吗？',
-    expand_filter: '展开筛选栏'
+    expand_filter: '展开筛选栏',
+    collapse_filter: '收起筛选栏'
   },
   en: {
     ok: 'OK', issues: 'issues',
@@ -252,7 +260,8 @@ var T = {
     cancel: 'Cancel',
     copied: 'Copied to clipboard', copy_failed: 'Copy failed',
     clear_title: 'Clear Logs', clear_content: 'Clear all logs?',
-    expand_filter: 'Expand Filters'
+    expand_filter: 'Expand Filters',
+    collapse_filter: 'Collapse Filters'
   }
 }
 
@@ -491,8 +500,8 @@ export default {
 .br-dot-err { background: var(--red); box-shadow: 0 0 12rpx rgba(248,81,73,0.5); }
 
 /* Collapsed bar */
-.br-collapsed-bar { display: flex; align-items: center; padding: 10rpx 32rpx; background: var(--bg1); border-bottom: 1px solid var(--border); flex-shrink: 0; }
-.br-collapsed-bar:active { background: var(--bg2); }
+.br-collapsed-bar { display: flex; align-items: center; padding: 10rpx 32rpx; background: var(--bg1); border-bottom: 1px solid var(--border); flex-shrink: 0; justify-content: space-between; }
+.br-collapsed-info { display: flex; align-items: center; flex: 1; }
 .br-collapsed-title { font-size: 24rpx; font-weight: 600; color: #f0f6fc; }
 .br-collapsed-count { font-size: 20rpx; color: var(--fg2); margin-left: 16rpx; }
 .br-collapsed-chev { font-size: 20rpx; color: var(--fg1); margin-left: auto; }
