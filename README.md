@@ -70,7 +70,8 @@
 | **成本** | 永久免费 | 永久免费，无 seat 限制 |
 | **部署** | 一行 `BR.init()` | 集成 CI，私有化部署 |
 | **数据** | 100% 本地存储 | 可接入自有日志后端 |
-| **AI 诊断** | Claude Code / Reasonix / Cursor 等随选 | MCP Server 对接内部 AI 平台 |
+| **AI 诊断** | Skill 激活即用（Claude Code / Reasonix / Cursor …） | Skill + MCP Server 双通道 |
+| **MCP** | ✅ 一条命令启动 `node mcp-server.js` | ✅ 可集成至企业 AI 平台 |
 | **定制** | MIT 协议随意改 | 可 fork 二开，无法律风险 |
 
 > 💡 所有 AI Agent 共享同一份 [SKILL.md](SKILL.md)，通过 [AGENTS.md](AGENTS.md) 自动发现。
