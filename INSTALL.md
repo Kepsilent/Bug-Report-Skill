@@ -630,7 +630,7 @@ touch GEMINI.md
 
 **原因分析：**
 1. **UMD root 变量为 undefined** — uni-app 的 app-service 环境中 `self` 不存在、严格模式 `this` 为 `undefined`，导致 `root.BugReport = ...` 抛出 `TypeError: Cannot set property 'BugReport' of undefined`
-   - **修复：** 确保 `index.js` / `index.mjs` 的 UMD 包装器使用 `globalThis` 作为最优先兜底（v2.1+ 已内置此修复）
+   - **修复：** 确保 `index.js` / `index.mjs` 的 UMD 包装器使用 `globalThis` 作为最优先兜底（v3.0+ 已内置此修复）
 2. **ESM 导入失败** — Vite 项目用了 UMD 版 `index.js`，`import` 失败导致整个模块链断裂
    - **修复：** 改用 `index.mjs` 重新安装
 3. **Init 失败导致整个 App 崩溃** — `BR.init()` 抛出异常没有被捕获，导致 App.vue onLaunch 中断
