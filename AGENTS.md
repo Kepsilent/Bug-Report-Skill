@@ -1,4 +1,4 @@
-# BugReport — 万金油 Bug 诊断系统
+# BRS (Bug Report System) — 跨平台崩溃监控 + AI 诊断
 
 > 本目录是一个跨平台 Bug 日志采集 + AI 诊断技能包。
 > 你是 AI Agent？请继续读下去。

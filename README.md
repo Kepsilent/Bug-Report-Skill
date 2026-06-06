@@ -1,4 +1,4 @@
-# 万金油 Bug Report System
+# BRS (Bug Report System)
 
 [![JS](https://img.shields.io/badge/JS-HBuilderX-blue)](#hbuilderx--js)
 [![Kotlin](https://img.shields.io/badge/Kotlin-Android%20Studio-purple)](#android-studio--kotlin)
@@ -8,7 +8,7 @@
 [![MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 [![Agents](https://img.shields.io/badge/AI%20Agents-Claude%20Code%20%7C%20Reasonix%20%7C%20Cursor%20%7C%20Codex%20%7C%20Copilot%20%7C%20Windsurf%20%7C%20Gemini%20CLI%20%7C%20...-6e40c9)](https://github.com/Kepsilent/Bug-Report-Skill)
 
-**一套 Skill，通吃所有平台 × 所有 AI Agent。** 零依赖、一行接入、自动网络拦截、统一暗色终端可视化。
+**BRS — 跨平台崩溃监控与 AI 智能诊断系统。** 零依赖、一行接入、自动网络拦截、隐私脱敏、全平台可视化。
 
 ---
 

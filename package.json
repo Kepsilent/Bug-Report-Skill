@@ -1,7 +1,7 @@
 {
   "name": "bugreport",
   "version": "3.0.0",
-  "description": "BRS (Bug Report System) — universal logging library with AI agent diagnostic skill for cross-platform bug diagnosis (uni-app, WeChat Mini Program, React Native, Android, iOS, Browser, Node, Electron)",
+  "description": "BRS (Bug Report System) — 跨平台崩溃监控 & AI 智能诊断系统 | 面包屑 · 快照 · 脱敏 · WebView · MCP | uni-app/Android/iOS/微信小程序/RN/Electron",
   "main": "index.js",
   "module": "index.mjs",
   "exports": {
