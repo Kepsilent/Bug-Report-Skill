@@ -262,7 +262,7 @@ export default {
   data() {
     return {
       allLogs: [], tab: 0, expand: -1, searchText: '',
-      showSearch: false, showExport: false, autoRefresh: true, tabsCollapsed: false,
+      showSearch: false, showExport: false, autoRefresh: true, tabsCollapsed: true,
       errCount: 0, wrnCount: 0, netCount: 0, perfCount: 0, crashCount: 0, crumbCount: 0,
       stats: { sessionMs: 0, device: {} },
       lang: 'zh'
