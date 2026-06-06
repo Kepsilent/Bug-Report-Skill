@@ -348,9 +348,10 @@ export default {
       try { var wxInfo = wx.getSystemInfoSync(); if (wxInfo && wxInfo.language) loc = wxInfo.language } catch(e) {}
       // #endif
       // #ifdef H5
-      loc = (typeof navigator !== 'undefined' && navigator.language) || ''
+      if (!loc) loc = (typeof navigator !== 'undefined' && navigator.language) || ''
       // #endif
-      this.lang = String(loc || '').toLowerCase().startsWith('zh') ? 'zh' : 'en'
+      var isZh = String(loc || 'zh').toLowerCase().startsWith('zh')
+      this.lang = isZh ? 'zh' : 'en'
     },
     getBR: function() {
       if (this.bridge) return this.bridge
@@ -532,7 +533,7 @@ export default {
 .br-input:focus { border-color: var(--blue); }
 
 /* Tabs */
-.br-tabs { display: flex; padding: 0 32rpx; background: var(--bg1); border-bottom: 1px solid var(--border); white-space: nowrap; align-items: center; }
+.br-tabs { display: flex; padding: 0 32rpx; background: var(--bg1); white-space: nowrap; align-items: center; }
 .br-tab { padding: 20rpx 24rpx; font-size: 22rpx; color: var(--fg1); border-bottom: 4rpx solid transparent; white-space: nowrap; display: flex; align-items: center; }
 .br-tab.on { color: #f0f6fc; border-bottom-color: var(--blue); }
 .br-tab-e.on { border-bottom-color: var(--red); }
@@ -609,7 +610,7 @@ export default {
 .br-empty { text-align: center; padding: 120rpx 40rpx; color: var(--fg2); font-size: 26rpx; }
 
 /* Status bar */
-.br-status { display: flex; align-items: center; padding: 8rpx 32rpx; background: var(--blue); flex-shrink: 0; }
+.br-status { display: flex; align-items: center; padding: 4rpx 32rpx; background: var(--blue); min-height: 56rpx; flex-shrink: 0; }
 .br-status > * { margin-right: 20rpx; }
 .br-status text { font-size: 22rpx; color: #fff; font-family: monospace; }
 .br-status-r { margin-left: auto; display: flex; }

@@ -276,7 +276,7 @@ export default {
     },
     detectLang() {
       var loc = (typeof navigator !== 'undefined' && navigator.language) || ''
-      this.lang = String(loc).toLowerCase().startsWith('zh') ? 'zh' : 'en'
+      this.lang = String(loc || 'zh').toLowerCase().startsWith('zh') ? 'zh' : 'en'
     },
     getBR() { return window.BugReport || null },
     refresh() {
@@ -352,7 +352,7 @@ export default {
 .br-filter { display: flex; gap: 8px; padding: 8px 16px; background: var(--bg1); border-bottom: 1px solid var(--border); }
 .br-input { flex: 1; background: var(--bg0); border: 1px solid var(--border); border-radius: 4px; padding: 6px 12px; color: var(--fg0); font-size: 12px; font-family: monospace; outline: none; }
 .br-input:focus { border-color: var(--blue); }
-.br-tabs { display: flex; padding: 0 8px; background: var(--bg1); border-bottom: 1px solid var(--border); overflow-x: auto; align-items: center; }
+.br-tabs { display: flex; padding: 0 8px; background: var(--bg1); overflow-x: auto; align-items: center; }
 .br-tab { padding: 8px 14px; font-size: 11px; color: var(--fg1); border-bottom: 2px solid transparent; cursor: pointer; display: flex; align-items: center; gap: 6px; white-space: nowrap; }
 .br-tab.on { color: #f0f6fc; border-bottom-color: var(--blue); }
 .br-tab-e.on { border-bottom-color: var(--red); }
@@ -407,7 +407,7 @@ export default {
 .br-tl-tag { font-size: 11px; color: var(--blue); margin-left: 8px; }
 .br-tl-msg { font-size: 11px; color: var(--fg1); display: block; margin-top: 2px; }
 .br-empty { text-align: center; padding: 60px 20px; color: var(--fg2); font-size: 13px; }
-.br-status { display: flex; align-items: center; gap: 8px; padding: 4px 16px; background: var(--blue); flex-shrink: 0; font-size: 11px; color: #fff; font-family: monospace; }
+.br-status { display: flex; align-items: center; gap: 8px; padding: 2px 16px; background: var(--blue); min-height: 30px; flex-shrink: 0; font-size: 11px; color: #fff; font-family: monospace; }
 .br-status-r { margin-left: auto; display: flex; gap: 6px; }
 .br-status .br-btn { background: rgba(255,255,255,0.15); border-color: rgba(255,255,255,0.2); color: #fff; }
 .br-status .br-btn:hover { background: rgba(255,255,255,0.25); }
