@@ -57,6 +57,7 @@
           <view :class="['br-tab', { on: tab===6 }]" @tap="selectTab(6)">
             <text>{{ t('crumbs') }}</text><text class="br-badge" v-if="crumbCount">{{ crumbCount }}</text>
           </view>
+          <view style="min-width:32rpx;flex-shrink:0;"></view>
         </scroll-view>
         <view class="br-stats">
           <text class="br-stat br-stat-e" @tap="selectTab(1)">{{ t('err') }}:{{ errCount }}</text>
