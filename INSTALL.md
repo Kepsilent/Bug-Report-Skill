@@ -20,6 +20,22 @@
 
 ### -1.1 扫描旧版痕迹（按平台）
 
+**所有平台通用扫描（无论项目类型）：**
+```bash
+# 搜索旧版 BRS 文件
+find . -type f \( -name "bug-report.js" -o -name "bug-report-app.js" -o -name "error-logger.js" -o -name "debug-log.vue" -o -name "log-viewer.vue" -o -name "log-viewer-common.vue" \) 2>/dev/null | grep -v node_modules | grep -v ".git/"
+# 搜索旧版 import/reference
+grep -r "bug-report\|error-logger\|errorLogger\|bugReport\|log-viewer\|debug-log" --include="*.js" --include="*.vue" --include="*.json" --include="*.ts" . 2>/dev/null | grep -v node_modules | grep -v ".git/"
+# 搜索 Reasonix skill 残留
+find . -type f -path "*/.reasonix/skills/bug-report.md" 2>/dev/null
+# 搜索 reasonix.toml 中的旧 BRS MCP 配置
+grep -r "name.*=.*\"brs\"" --include="*.toml" . 2>/dev/null | grep -v ".git/"
+# 搜索旧 SKILL.md 残留（BRS 自己项目的别删）
+find . -maxdepth 1 -name "SKILL.md" 2>/dev/null
+```
+
+如果命中任何结果 → 跳到 Step -1.3 执行清理。
+
 **uni-app / HBuilderX 项目：**
 ```bash
 # 搜索旧版文件
@@ -109,6 +125,15 @@ rm -f src/bug-report.js
 # 清理 App.tsx / App.jsx 中的旧 import
 ```
 
+**Reasonix 通用清理（任何平台都要执行）：**
+```bash
+# 1. 删除旧的 Reasonix skill
+rm -f .reasonix/skills/bug-report.md
+
+# 2. 清理 reasonix.toml 中的旧 BRS MCP 配置
+#    删除 [[plugins]] name = "brs" 及其下面的 command/args 行（整块删除）
+```
+
 ### -1.4 告知用户
 清理完成后，告诉用户：
 > 检测到旧版 BugReport，已清理：
@@ -165,8 +190,14 @@ cp index.js 用户项目/src/utils/bug-report.js
 # 复制 uni-app 通用日志查看器
 cp log-viewer-common.vue 用户项目/src/pages/debug-log.vue
 
+# 复制跨平台 WebView 日志面板（可选，WebView 加载用）
+cp log-viewer.html 用户项目/src/pages/
+
 # 复制 AI 诊断规范（Reasonix/Cursor 等 skill 需要读取）
 cp SKILL.md 用户项目/
+
+# 复制 MCP Server（Reasonix MCP 集成用）
+cp mcp-server.js 用户项目/
 ```
 
 ### 1.2 修改 App.vue — 添加初始化
@@ -376,15 +407,19 @@ cp SKILL.md ~/.claude/skills/bug-report/
 
 ### Step 6R: Reasonix
 
-使用 Reasonix 的 `install_skill` 工具安装：
+⭐ **全部自动化，Agent 执行下面 3 步即可。**
 
-- **name**: `bug-report`
-- **description**: `全能 Bug 诊断技能 — 5 阶段：收集→分析→追踪→报告→修复。覆盖 uni-app / 微信小程序 / Android / iOS / React Native / Node`
-- **runAs**: `subagent`
-- **allowedTools**: `read_file, grep, glob, bash, edit_file, write_file, ls, web_fetch`
-- **scope**: `project`（写入用户项目的 `.reasonix/skills/bug-report.md`）
+#### 6R.1 安装诊断 Skill
 
-Skill body 内容（**自包含完整诊断流程，不依赖外部文件**）：
+使用 `install_skill` 工具，参数如下：
+
+- `name`: `bug-report`
+- `description`: `全能 Bug 诊断技能 — 5 阶段：收集→分析→追踪→报告→修复。覆盖 uni-app / 微信小程序 / Android / iOS / React Native / Node`
+- `runAs`: `subagent`
+- `allowedTools`: `["read_file", "grep", "glob", "bash", "edit_file", "write_file", "ls", "web_fetch"]`
+- `scope`: `project`
+
+Body 写完整自包含诊断流程：
 
 ```markdown
 # BRS Bug 诊断技能
@@ -399,7 +434,7 @@ Skill body 内容（**自包含完整诊断流程，不依赖外部文件**）�
 
 ## Phase 2: 日志分析
 - 格式识别：BRS JSON（含 "level"/"cat"/"levelLabel"/"device" 字段）、BRS Text（"BugReport Log Export" 头部）、logcat（"E/TAG (PID): msg"）、os.Logger
-- 分析框架：时间线重建 → 崩溃链追溯（检查 extra.breadcrumbs 还原用户路径）→ 网络诊断（检查 NETWORK 类别超时/失败）→ 性能诊断（PERF 类别）→ 生命周期检查
+- 分析框架：时间线重建 → 崩溃链追溯（检查 extra.breadcrumbs 还原用户路径）→ 网络诊断 → 性能诊断 → 生命周期检查
 - 敏感字段已脱敏为 ***，无需额外处理
 
 ## Phase 3: 代码追踪
@@ -407,16 +442,35 @@ Skill body 内容（**自包含完整诊断流程，不依赖外部文件**）�
 - 平台常见问题：uni-app 的 plus is not defined / 小程序域名白名单 / Android NetworkOnMainThreadException / iOS ATS
 
 ## Phase 4: 生成报告
-写入 bugs/YYYY-MM-DD-<slug>.md，包含：报告时间、严重程度、影响页面、复现步骤、日志分析、根因分析、修复方案、风险等级
+写入 bugs/YYYY-MM-DD-<slug>.md：报告时间、严重程度、影响页面、复现步骤、日志分析、根因分析、修复方案、风险等级
 
 ## Phase 5: 修复执行
-- 根因明确 + 改动 <3 文件 + 低风险 → 直接修改代码
+- 根因明确 + 改动 <3 文件 + 低风险 → 直接改代码
 - 根因不明确 → 标记需进一步排查，不强行修复
 
 完整规范参考：https://github.com/Kepsilent/Bug-Report-Skill/blob/main/SKILL.md
 ```
 
-> 告知用户：以后在 Reasonix 中说 `/bug-report` 或 "帮我排查这个错误" 即可激活诊断。
+#### 6R.2 配置 MCP Server（让 Reasonix 能直接查日志）
+
+在用户项目的 `reasonix.toml` 文件中找到 `# External MCP servers` 注释段（通常在文件末尾），在它下面添加：
+
+```toml
+[[plugins]]
+name    = "brs"
+command = "node"
+args    = ["mcp-server.js", "--dir", "./bugs/"]
+```
+
+如果文件中没有 `# External MCP servers` 注释，直接在文件末尾追加上面这段。
+
+#### 6R.3 复制 mcp-server.js
+
+```bash
+cp mcp-server.js 用户项目/
+```
+
+> 告知用户：安装完成！以后在 Reasonix 中说 `/bug-report` 或 "帮我排查这个错误" 即可激活诊断。MCP Server 已自动配置，重启 Reasonix 后可在对话中直接说"查一下最近的崩溃"。
 
 ---
 
