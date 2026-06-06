@@ -1,5 +1,16 @@
 # INSTALL.md — AI Agent 自动安装指令
 
+> ⚠️ **强制执行清单 — 以下 6 步必须全部执行，一步都不能跳过。执行完毕后回到此处自检。**
+>
+> | # | 步骤 | 状态 |
+> |---|------|:--:|
+> | -1 | 检测并删除旧版文件（包括 `.reasonix/skills/bug-report.md`、`reasonix.toml` 中的旧 MCP 配置） | ⬜ |
+> | 0 | 检测项目平台类型 | ⬜ |
+> | 1-5 | 按平台复制 SDK 文件 + 修改 App.vue / pages.json | ⬜ |
+> | 6S | **安装诊断 Skill 到自己身上**（Reasonix 用 `install_skill`，Claude Code 复制 SKILL.md，Cursor 写 rules…） | ⬜ |
+> | 6M | **配置 MCP Server**（Reasonix: 往 `reasonix.toml` 写入 `[[plugins]] name="brs"` 块；其他 Agent 可选） | ⬜ |
+> | ✅ | 验证：检查 `BR.init()` 不影响编译、Skill 可触发、MCP 可调用 | ⬜ |
+
 > 给 **所有 AI Agent** 看的：当用户提供 GitHub 链接 `https://github.com/Kepsilent/Bug-Report-Skill` 并要求安装时，按以下流程自动执行。
 > 本文件与 [`AGENTS.md`](AGENTS.md) 配合使用 — AGENTS.md 引导 Agent 来到这里，INSTALL.md 提供具体步骤。
 
@@ -20,18 +31,14 @@
 
 ### -1.1 扫描旧版痕迹（按平台）
 
-**所有平台通用扫描（无论项目类型）：**
+**所有平台通用扫描（Windows 兼容）：**
 ```bash
-# 搜索旧版 BRS 文件
-find . -type f \( -name "bug-report.js" -o -name "bug-report-app.js" -o -name "error-logger.js" -o -name "debug-log.vue" -o -name "log-viewer.vue" -o -name "log-viewer-common.vue" \) 2>/dev/null | grep -v node_modules | grep -v ".git/"
+# 用 ls 扫描旧版 BRS 文件（Windows 兼容）
+ls -la src/utils/bug-report.js src/utils/bug-report-app.js src/utils/error-logger.js src/pages/*/debug-log.vue src/pages/debug-log.vue src/pages/log-viewer.vue .reasonix/skills/bug-report.md mcp-server.js SKILL.md CLAUDE.md 2>/dev/null
+# 搜索旧版 Reasonix MCP 配置
+grep -r "name.*=.*\"brs\"" --include="*.toml" . 2>/dev/null
 # 搜索旧版 import/reference
-grep -r "bug-report\|error-logger\|errorLogger\|bugReport\|log-viewer\|debug-log" --include="*.js" --include="*.vue" --include="*.json" --include="*.ts" . 2>/dev/null | grep -v node_modules | grep -v ".git/"
-# 搜索 Reasonix skill 残留
-find . -type f -path "*/.reasonix/skills/bug-report.md" 2>/dev/null
-# 搜索 reasonix.toml 中的旧 BRS MCP 配置
-grep -r "name.*=.*\"brs\"" --include="*.toml" . 2>/dev/null | grep -v ".git/"
-# 搜索旧 SKILL.md 残留（BRS 自己项目的别删）
-find . -maxdepth 1 -name "SKILL.md" 2>/dev/null
+grep -r "bug-report\|error-logger\|errorLogger\|bugReport" --include="*.js" --include="*.vue" --include="*.json" --include="*.ts" . 2>/dev/null | grep -v node_modules | grep -v ".git/"
 ```
 
 如果命中任何结果 → 跳到 Step -1.3 执行清理。
@@ -230,9 +237,11 @@ try {
 
 ### 1.4 验证
 编译运行后检查：
-- 控制台出现 `BugReport v2.1 initialized`
+- 控制台出现 `BRS v3.0 initialized`
 - 打开 `/pages/debug-log` 看到暗色终端风格日志面板
 - 发起网络请求后，面板 NETWORK tab 有自动日志
+
+> ⏭️ **继续执行 Step 6（安装 Skill + MCP），不要停在这里。**
 
 ---
 
@@ -278,6 +287,8 @@ BugReport.init(this) { cfg ->
 - `adb logcat -s BugReport` 看到日志输出
 - 编译运行，触发 Error 后打开 LogViewerActivity 看到日志列表
 
+> ⏭️ **继续执行 Step 6（安装 Skill + MCP），不要停在这里。**
+
 ---
 
 ## Step 3: 微信小程序（纯）
@@ -316,8 +327,10 @@ BR.wx.req({ url: '...', success: fn })
 ```
 
 ### 3.5 验证
-- 控制台出现 `BugReport v2.1 initialized`
+- 控制台出现 `BRS v3.0 initialized`
 - debug-log 页面正常显示日志
+
+> ⏭️ **继续执行 Step 6（安装 Skill + MCP），不要停在这里。**
 
 ---
 
@@ -343,7 +356,9 @@ useEffect(() => {
 RN 的 fetch 在 WebView 内可被自动 patch。如需原生网络拦截，考虑使用 RN 桥接或手动调用 `BR.net.req()`。
 
 ### 4.4 验证
-控制台出现 `BugReport v2.1 initialized`。
+控制台出现 `BRS v3.0 initialized`。
+
+> ⏭️ **继续执行 Step 6（安装 Skill + MCP），不要停在这里。**
 
 ---
 
@@ -369,7 +384,9 @@ cp log-viewer.vue 用户项目/src/components/LogViewer.vue
 ```
 
 ### 5.3 验证
-浏览器控制台出现 `BugReport v2.1 initialized`，`window.BugReport` 可用。
+浏览器控制台出现 `BRS v3.0 initialized`，`window.BugReport` 可用。
+
+> ⏭️ **继续执行 Step 6（安装 Skill + MCP），不要停在这里。**
 
 ---
 
