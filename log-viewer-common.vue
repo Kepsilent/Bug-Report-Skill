@@ -9,9 +9,6 @@
         <text class="br-tb-stat">{{ errCount > 0 ? errCount + ' ' + t('issues') : t('ok') }}</text>
       </view>
       <view class="br-tb-right">
-        <view class="br-btn" v-if="!tabsCollapsed" @tap="tabsCollapsed = true">
-          <text>▲ {{ t('collapse_filter') }}</text>
-        </view>
         <view class="br-btn" @tap="autoRefresh = !autoRefresh">
           <text>{{ autoRefresh ? t('pause') : t('live') }}</text>
         </view>
@@ -24,57 +21,66 @@
       </view>
     </view>
 
-    <!-- Collapsed bar (shown when tabs are hidden) -->
-    <view class="br-collapsed-bar" v-if="tabsCollapsed">
-      <view class="br-collapsed-info" @tap="tabsCollapsed = false">
-        <text class="br-collapsed-title">{{ tabLabel() }}</text>
-        <text class="br-collapsed-count">{{ allLogs.length }} {{ t('logs') }}</text>
+    <!-- Filter header — collapsed / expanded in-place -->
+    <view class="br-filter-bar">
+      <!-- Collapsed -->
+      <view class="br-collapsed-row" v-if="tabsCollapsed">
+        <view class="br-collapsed-info" @tap="tabsCollapsed = false">
+          <text class="br-collapsed-title">{{ tabLabel() }}</text>
+          <text class="br-collapsed-count">{{ allLogs.length }} {{ t('logs') }}</text>
+        </view>
+        <view class="br-btn br-btn-sm" @tap="tabsCollapsed = false">
+          <text>▼ {{ t('expand_filter') }}</text>
+        </view>
       </view>
-      <view class="br-btn br-btn-sm" @tap="tabsCollapsed = false">
-        <text>▼ {{ t('expand_filter') }}</text>
+
+      <!-- Expanded -->
+      <view v-if="!tabsCollapsed">
+        <!-- Tabs -->
+        <scroll-view class="br-tabs" scroll-x="true">
+          <view :class="['br-tab', { on: tab===0 }]" @tap="tabToggle(0)">
+            <text>{{ t('all') }}</text><text class="br-badge" v-if="allLogs.length">{{ allLogs.length }}</text>
+          </view>
+          <view :class="['br-tab br-tab-e', { on: tab===1 }]" @tap="selectTab(1)">
+            <text>{{ t('errors') }}</text><text class="br-badge br-badge-e" v-if="errCount">{{ errCount }}</text>
+          </view>
+          <view :class="['br-tab br-tab-w', { on: tab===2 }]" @tap="selectTab(2)">
+            <text>{{ t('warnings') }}</text><text class="br-badge br-badge-w" v-if="wrnCount">{{ wrnCount }}</text>
+          </view>
+          <view :class="['br-tab', { on: tab===3 }]" @tap="selectTab(3)">
+            <text>{{ t('network') }}</text><text class="br-badge" v-if="netCount">{{ netCount }}</text>
+          </view>
+          <view :class="['br-tab', { on: tab===4 }]" @tap="selectTab(4)">
+            <text>{{ t('perf_tab') }}</text><text class="br-badge" v-if="perfCount">{{ perfCount }}</text>
+          </view>
+          <view :class="['br-tab br-tab-e', { on: tab===5 }]" @tap="selectTab(5)">
+            <text>{{ t('crash_tab') }}</text><text class="br-badge br-badge-e" v-if="crashCount">{{ crashCount }}</text>
+          </view>
+          <view :class="['br-tab', { on: tab===6 }]" @tap="selectTab(6)">
+            <text>{{ t('crumbs') }}</text><text class="br-badge" v-if="crumbCount">{{ crumbCount }}</text>
+          </view>
+          <view class="br-btn br-btn-sm br-collapse-btn" @tap="tabsCollapsed = true">
+            <text>▲ {{ t('collapse_filter') }}</text>
+          </view>
+        </scroll-view>
+
+        <!-- Stats row -->
+        <view class="br-stats">
+          <text class="br-stat br-stat-e" @tap="selectTab(1)">{{ t('err') }}:{{ errCount }}</text>
+          <text class="br-stat br-stat-w" @tap="selectTab(2)">{{ t('warn') }}:{{ wrnCount }}</text>
+          <text class="br-stat br-stat-n" @tap="selectTab(3)">{{ t('net') }}:{{ netCount }}</text>
+          <text class="br-stat br-stat-p" @tap="selectTab(4)">{{ t('perf') }}:{{ perfCount }}</text>
+          <text class="br-stat br-stat-b" @tap="selectTab(6)">{{ t('crumb') }}:{{ crumbCount }}</text>
+          <text class="br-stat br-stat-s">{{ fmtDur(stats.sessionMs) }}</text>
+        </view>
+
+        <!-- Search bar -->
+        <view class="br-filter" v-if="showSearch">
+          <input class="br-input" v-model="searchText" :placeholder="t('search_ph')" />
+          <view class="br-btn br-btn-sm" @tap="searchText=''; showSearch=false"><text>{{ t('close') }}</text></view>
+        </view>
       </view>
     </view>
-
-    <!-- Quick Stats -->
-    <view class="br-stats" v-if="!tabsCollapsed">
-      <text class="br-stat br-stat-e" @tap="selectTab(1)">{{ t('err') }}:{{ errCount }}</text>
-      <text class="br-stat br-stat-w" @tap="selectTab(2)">{{ t('warn') }}:{{ wrnCount }}</text>
-      <text class="br-stat br-stat-n" @tap="selectTab(3)">{{ t('net') }}:{{ netCount }}</text>
-      <text class="br-stat br-stat-p" @tap="selectTab(4)">{{ t('perf') }}:{{ perfCount }}</text>
-      <text class="br-stat br-stat-b" @tap="selectTab(6)">{{ t('crumb') }}:{{ crumbCount }}</text>
-      <text class="br-stat br-stat-s">{{ fmtDur(stats.sessionMs) }}</text>
-    </view>
-
-    <!-- Filter bar -->
-    <view class="br-filter" v-if="showSearch && !tabsCollapsed">
-      <input class="br-input" v-model="searchText" :placeholder="t('search_ph')" />
-      <view class="br-btn br-btn-sm" @tap="searchText=''; showSearch=false"><text>{{ t('close') }}</text></view>
-    </view>
-
-    <!-- Tabs -->
-    <scroll-view class="br-tabs" scroll-x="true" v-if="!tabsCollapsed">
-      <view :class="['br-tab', { on: tab===0 }]" @tap="tabToggle(0)">
-        <text>{{ t('all') }}</text><text class="br-badge" v-if="allLogs.length">{{ allLogs.length }}</text>
-      </view>
-      <view :class="['br-tab br-tab-e', { on: tab===1 }]" @tap="selectTab(1)">
-        <text>{{ t('errors') }}</text><text class="br-badge br-badge-e" v-if="errCount">{{ errCount }}</text>
-      </view>
-      <view :class="['br-tab br-tab-w', { on: tab===2 }]" @tap="selectTab(2)">
-        <text>{{ t('warnings') }}</text><text class="br-badge br-badge-w" v-if="wrnCount">{{ wrnCount }}</text>
-      </view>
-      <view :class="['br-tab', { on: tab===3 }]" @tap="selectTab(3)">
-        <text>{{ t('network') }}</text><text class="br-badge" v-if="netCount">{{ netCount }}</text>
-      </view>
-      <view :class="['br-tab', { on: tab===4 }]" @tap="selectTab(4)">
-        <text>{{ t('perf_tab') }}</text><text class="br-badge" v-if="perfCount">{{ perfCount }}</text>
-      </view>
-      <view :class="['br-tab br-tab-e', { on: tab===5 }]" @tap="selectTab(5)">
-        <text>{{ t('crash_tab') }}</text><text class="br-badge br-badge-e" v-if="crashCount">{{ crashCount }}</text>
-      </view>
-      <view :class="['br-tab', { on: tab===6 }]" @tap="selectTab(6)">
-        <text>{{ t('crumbs') }}</text><text class="br-badge" v-if="crumbCount">{{ crumbCount }}</text>
-      </view>
-    </scroll-view>
 
     <!-- Log list -->
     <scroll-view class="br-list" scroll-y="true">
@@ -500,11 +506,10 @@ export default {
 .br-dot-err { background: var(--red); box-shadow: 0 0 12rpx rgba(248,81,73,0.5); }
 
 /* Collapsed bar */
-.br-collapsed-bar { display: flex; align-items: center; padding: 10rpx 32rpx; background: var(--bg1); border-bottom: 1px solid var(--border); flex-shrink: 0; justify-content: space-between; }
+.br-collapsed-row { display: flex; align-items: center; padding: 10rpx 32rpx; background: var(--bg1); border-bottom: 1px solid var(--border); justify-content: space-between; }
 .br-collapsed-info { display: flex; align-items: center; flex: 1; }
 .br-collapsed-title { font-size: 24rpx; font-weight: 600; color: #f0f6fc; }
 .br-collapsed-count { font-size: 20rpx; color: var(--fg2); margin-left: 16rpx; }
-.br-collapsed-chev { font-size: 20rpx; color: var(--fg1); margin-left: auto; }
 
 /* Buttons */
 .br-btn { background: var(--bg2); border: 1px solid var(--border); border-radius: 8rpx; padding: 8rpx 24rpx; }
@@ -533,11 +538,13 @@ export default {
 .br-input:focus { border-color: var(--blue); }
 
 /* Tabs */
-.br-tabs { display: flex; padding: 0 32rpx; background: var(--bg1); border-bottom: 1px solid var(--border); flex-shrink: 0; white-space: nowrap; }
+.br-tabs { display: flex; padding: 0 32rpx; background: var(--bg1); border-bottom: 1px solid var(--border); white-space: nowrap; align-items: center; }
 .br-tab { padding: 16rpx 24rpx; font-size: 22rpx; color: var(--fg1); border-bottom: 4rpx solid transparent; white-space: nowrap; display: flex; align-items: center; }
 .br-tab.on { color: #f0f6fc; border-bottom-color: var(--blue); }
 .br-tab-e.on { border-bottom-color: var(--red); }
 .br-tab-w.on { border-bottom-color: var(--orange); }
+.br-collapse-btn { margin-left: auto; flex-shrink: 0; border-bottom: none !important; }
+.br-collapse-btn text { color: var(--fg1); }
 .br-badge { margin-left: 10rpx; background: var(--bg2); padding: 2rpx 12rpx; border-radius: 16rpx; font-size: 20rpx; font-family: monospace; }
 .br-badge-e { background: rgba(248,81,73,0.2); color: var(--red); }
 .br-badge-w { background: rgba(210,153,34,0.2); color: var(--orange); }

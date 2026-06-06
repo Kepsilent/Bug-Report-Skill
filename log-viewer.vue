@@ -9,47 +9,53 @@
         <span class="br-tb-stat">{{ errCount > 0 ? errCount + ' ' + t('issues') : t('ok') }}</span>
       </div>
       <div class="br-tb-right">
-        <button class="br-btn" v-if="!tabsCollapsed" @click="tabsCollapsed = true">▲ {{ t('collapse_filter') }}</button>
         <button class="br-btn" @click="autoRefresh = !autoRefresh">{{ autoRefresh ? t('pause') : t('live') }}</button>
         <button class="br-btn" @click="showSearch = !showSearch">{{ t('filter') }}</button>
         <button class="br-btn" @click="showExport = !showExport">{{ t('export') }}</button>
       </div>
     </div>
 
-    <!-- Collapsed bar (shown when tabs are hidden) -->
-    <div class="br-collapsed-bar" v-if="tabsCollapsed">
-      <div class="br-collapsed-info" @click="tabsCollapsed = false">
-        <span class="br-collapsed-title">{{ tabLabel() }}</span>
-        <span class="br-collapsed-count">{{ allLogs.length }} {{ t('logs') }}</span>
+    <!-- Filter header — collapsed / expanded in-place -->
+    <div class="br-filter-bar">
+      <!-- Collapsed -->
+      <div class="br-collapsed-row" v-if="tabsCollapsed">
+        <div class="br-collapsed-info" @click="tabsCollapsed = false">
+          <span class="br-collapsed-title">{{ tabLabel() }}</span>
+          <span class="br-collapsed-count">{{ allLogs.length }} {{ t('logs') }}</span>
+        </div>
+        <button class="br-btn br-btn-sm" @click="tabsCollapsed = false">▼ {{ t('expand_filter') }}</button>
       </div>
-      <button class="br-btn br-btn-sm" @click="tabsCollapsed = false">▼ {{ t('expand_filter') }}</button>
-    </div>
 
-    <!-- Quick Stats -->
-    <div class="br-stats" v-if="!tabsCollapsed">
-      <span class="br-stat br-stat-e" @click="tab = 1">{{ t('err') }}:{{ errCount }}</span>
-      <span class="br-stat br-stat-w" @click="tab = 2">{{ t('warn') }}:{{ wrnCount }}</span>
-      <span class="br-stat br-stat-n" @click="tab = 3">{{ t('net') }}:{{ netCount }}</span>
-      <span class="br-stat br-stat-p" @click="tab = 4">{{ t('perf') }}:{{ perfCount }}</span>
-      <span class="br-stat br-stat-b" @click="tab = 6">{{ t('crumb') }}:{{ crumbCount }}</span>
-      <span class="br-stat br-stat-s">{{ fmtDur(stats.sessionMs) }}</span>
-    </div>
+      <!-- Expanded -->
+      <div v-if="!tabsCollapsed">
+        <!-- Tabs -->
+        <div class="br-tabs">
+          <span :class="['br-tab', { on: tab===0 }]" @click="tabToggle(0)">{{ t('all') }}<span class="br-badge" v-if="allLogs.length">{{ allLogs.length }}</span></span>
+          <span :class="['br-tab br-tab-e', { on: tab===1 }]" @click="selectTab(1)">{{ t('errors') }}<span class="br-badge br-badge-e" v-if="errCount">{{ errCount }}</span></span>
+          <span :class="['br-tab br-tab-w', { on: tab===2 }]" @click="selectTab(2)">{{ t('warnings') }}<span class="br-badge br-badge-w" v-if="wrnCount">{{ wrnCount }}</span></span>
+          <span :class="['br-tab', { on: tab===3 }]" @click="selectTab(3)">{{ t('network') }}<span class="br-badge" v-if="netCount">{{ netCount }}</span></span>
+          <span :class="['br-tab', { on: tab===4 }]" @click="selectTab(4)">{{ t('perf_tab') }}<span class="br-badge" v-if="perfCount">{{ perfCount }}</span></span>
+          <span :class="['br-tab br-tab-e', { on: tab===5 }]" @click="selectTab(5)">{{ t('crash_tab') }}<span class="br-badge br-badge-e" v-if="crashCount">{{ crashCount }}</span></span>
+          <span :class="['br-tab', { on: tab===6 }]" @click="selectTab(6)">{{ t('crumbs') }}<span class="br-badge" v-if="crumbCount">{{ crumbCount }}</span></span>
+          <button class="br-btn br-btn-sm br-collapse-btn" @click="tabsCollapsed = true">▲ {{ t('collapse_filter') }}</button>
+        </div>
 
-    <!-- Filter bar -->
-    <div class="br-filter" v-if="showSearch && !tabsCollapsed">
-      <input class="br-input" v-model="searchText" :placeholder="t('search_ph')" />
-      <button class="br-btn br-btn-sm" @click="searchText=''; showSearch=false">{{ t('close') }}</button>
-    </div>
+        <!-- Stats row -->
+        <div class="br-stats">
+          <span class="br-stat br-stat-e" @click="selectTab(1)">{{ t('err') }}:{{ errCount }}</span>
+          <span class="br-stat br-stat-w" @click="selectTab(2)">{{ t('warn') }}:{{ wrnCount }}</span>
+          <span class="br-stat br-stat-n" @click="selectTab(3)">{{ t('net') }}:{{ netCount }}</span>
+          <span class="br-stat br-stat-p" @click="selectTab(4)">{{ t('perf') }}:{{ perfCount }}</span>
+          <span class="br-stat br-stat-b" @click="selectTab(6)">{{ t('crumb') }}:{{ crumbCount }}</span>
+          <span class="br-stat br-stat-s">{{ fmtDur(stats.sessionMs) }}</span>
+        </div>
 
-    <!-- Tabs -->
-    <div class="br-tabs" v-if="!tabsCollapsed">
-      <span :class="['br-tab', { on: tab===0 }]" @click="tabToggle(0)">{{ t('all') }}<span class="br-badge" v-if="allLogs.length">{{ allLogs.length }}</span></span>
-content": "      <span :class="['br-tab br-tab-e', { on: tab===1 }]" @click="selectTab(1)">{{ t('errors') }}<span class="br-badge br-badge-e" v-if="errCount">{{ errCount }}</span></span>
-      <span :class="['br-tab br-tab-w', { on: tab===2 }]" @click="selectTab(2)">{{ t('warnings') }}<span class="br-badge br-badge-w" v-if="wrnCount">{{ wrnCount }}</span></span>
-      <span :class="['br-tab', { on: tab===3 }]" @click="selectTab(3)">{{ t('network') }}<span class="br-badge" v-if="netCount">{{ netCount }}</span></span>
-      <span :class="['br-tab', { on: tab===4 }]" @click="selectTab(4)">{{ t('perf_tab') }}<span class="br-badge" v-if="perfCount">{{ perfCount }}</span></span>
-      <span :class="['br-tab br-tab-e', { on: tab===5 }]" @click="selectTab(5)">{{ t('crash_tab') }}<span class="br-badge br-badge-e" v-if="crashCount">{{ crashCount }}</span></span>
-      <span :class="['br-tab', { on: tab===6 }]" @click="selectTab(6)">{{ t('crumbs') }}<span class="br-badge" v-if="crumbCount">{{ crumbCount }}</span></span>
+        <!-- Search bar -->
+        <div class="br-filter" v-if="showSearch">
+          <input class="br-input" v-model="searchText" :placeholder="t('search_ph')" />
+          <button class="br-btn br-btn-sm" @click="searchText=''; showSearch=false">{{ t('close') }}</button>
+        </div>
+      </div>
     </div>
 
     <!-- Log list -->
@@ -335,11 +341,10 @@ export default {
 .br-dot-ok  { background: var(--green); }
 .br-dot-err { background: var(--red); box-shadow: 0 0 6px rgba(248,81,73,0.5); }
 
-.br-collapsed-bar { display: flex; align-items: center; justify-content: space-between; padding: 5px 16px; background: var(--bg1); border-bottom: 1px solid var(--border); flex-shrink: 0; }
+.br-collapsed-row { display: flex; align-items: center; justify-content: space-between; padding: 5px 16px; background: var(--bg1); border-bottom: 1px solid var(--border); }
 .br-collapsed-info { display: flex; align-items: center; flex: 1; cursor: pointer; }
 .br-collapsed-title { font-size: 12px; font-weight: 600; color: #f0f6fc; }
 .br-collapsed-count { font-size: 10px; color: var(--fg2); margin-left: 8px; }
-.br-collapsed-chev { font-size: 10px; color: var(--fg1); margin-left: auto; }
 
 .br-btn { background: var(--bg2); border: 1px solid var(--border); border-radius: 4px; padding: 4px 12px; color: var(--fg0); font-size: 11px; cursor: pointer; }
 .br-btn:hover { background: #30363d; }
@@ -353,11 +358,12 @@ export default {
 .br-filter { display: flex; gap: 8px; padding: 8px 16px; background: var(--bg1); border-bottom: 1px solid var(--border); }
 .br-input { flex: 1; background: var(--bg0); border: 1px solid var(--border); border-radius: 4px; padding: 6px 12px; color: var(--fg0); font-size: 12px; font-family: monospace; outline: none; }
 .br-input:focus { border-color: var(--blue); }
-.br-tabs { display: flex; padding: 0 16px; background: var(--bg1); border-bottom: 1px solid var(--border); flex-shrink: 0; overflow-x: auto; }
+.br-tabs { display: flex; padding: 0 16px; background: var(--bg1); border-bottom: 1px solid var(--border); overflow-x: auto; align-items: center; }
 .br-tab { padding: 8px 14px; font-size: 11px; color: var(--fg1); border-bottom: 2px solid transparent; cursor: pointer; display: flex; align-items: center; gap: 6px; white-space: nowrap; }
 .br-tab.on { color: #f0f6fc; border-bottom-color: var(--blue); }
 .br-tab-e.on { border-bottom-color: var(--red); }
 .br-tab-w.on { border-bottom-color: var(--orange); }
+.br-collapse-btn { margin-left: auto; flex-shrink: 0; border-bottom: none !important; padding: 4px 12px; font-size: 11px; }
 .br-badge { background: var(--bg2); padding: 1px 6px; border-radius: 8px; font-size: 10px; font-family: monospace; }
 .br-badge-e { background: rgba(248,81,73,0.2); color: var(--red); }
 .br-badge-w { background: rgba(210,153,34,0.2); color: var(--orange); }
