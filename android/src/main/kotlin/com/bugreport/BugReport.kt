@@ -97,8 +97,8 @@ object BugReport {
     internal fun sanitize(value: Any?): Any? {
         if (value == null) return null
         if (value is String) {
-            var s = value
-            for (r in sanitizerRules) { s = r.replace(s, "***") }
+            var s: String = value
+            for (r in sanitizerRules) { s = s.replace(r, "***") }
             return s
         }
         if (value is List<*>) { return value.map { sanitize(it) } }
