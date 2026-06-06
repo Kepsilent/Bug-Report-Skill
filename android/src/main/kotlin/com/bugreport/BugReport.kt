@@ -76,6 +76,13 @@ object BugReport {
     private val byPage = mutableMapOf<String, Int>()
     private var deviceSnapshot: DeviceSnapshot? = null
 
+    // Breadcrumbs — FIFO capped list
+    private val crumbs = mutableListOf<Crumb>()
+    private val crumbsMax = 50
+
+    // Latest state snapshot
+    private var stateSnapshot: Any? = null
+
     // ---- Network sub-object ----
     object net {
         fun req(method: String, url: String, status: Int, durMs: Long, sizeBytes: Long = 0): LogEntry {
@@ -172,7 +179,7 @@ object BugReport {
         }
 
         // Launch log
-        info("app:launch", "BugReport v2.1 initialized (Android)")
+        info("app:launch", "BRS v3.0 initialized (Android)")
     }
 
     // ---- Logging shortcuts ----
@@ -260,6 +267,18 @@ object BugReport {
 
     fun device(): DeviceSnapshot? = deviceSnapshot
 
+    // ---- Breadcrumbs & Snapshot ----
+    fun crumb(tag: String, msg: String) {
+        val now = System.currentTimeMillis()
+        crumbs.add(Crumb(now, dateFormat.format(Date(now)), tag, msg))
+        while (crumbs.size > crumbsMax) crumbs.removeAt(0)
+    }
+    fun crumbs(): List<Crumb> = crumbs.toList()
+    fun clearCrumbs() { crumbs.clear() }
+    fun snapshot(data: Any?) { stateSnapshot = data }
+    fun getSnapshot(): Any? = stateSnapshot
+    fun clearSnapshot() { stateSnapshot = null }
+
     // ---- Internal ----
     internal fun onLog(level: Int, category: String, tag: String, msg: String, extra: Map<String, Any?>?): LogEntry {
         // Auto-buffer: if not yet initialized, store in pending; flushed on init()
@@ -272,6 +291,15 @@ object BugReport {
 
         seq++
         val now = System.currentTimeMillis()
+        // On FATAL: auto-attach breadcrumbs + snapshot into extra
+        var finalExtra = extra
+        if (level == LogLevel.FATAL.value) {
+            val merged = mutableMapOf<String, Any?>()
+            extra?.forEach { (k, v) -> merged[k] = v }
+            if (crumbs.isNotEmpty()) merged["breadcrumbs"] = crumbs.toList()
+            if (stateSnapshot != null) merged["snapshot"] = stateSnapshot
+            finalExtra = merged
+        }
         val entry = LogEntry(
             id = seq,
             ts = now,
@@ -281,9 +309,9 @@ object BugReport {
             cat = category,
             tag = tag,
             msg = msg,
-            stack = extra?.get("stack") as? String ?: "",
+            stack = finalExtra?.get("stack") as? String ?: extra?.get("stack") as? String ?: "",
             page = "",
-            extra = extra,
+            extra = finalExtra,
             device = deviceSnapshot
         )
 

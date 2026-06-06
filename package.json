@@ -1,7 +1,7 @@
 {
   "name": "bugreport",
-  "version": "2.1.0",
-  "description": "万金油 Bug Report System — universal logging library with Claude Code skill for cross-platform bug diagnosis (uni-app, WeChat Mini Program, React Native, Android, Browser, Node)",
+  "version": "3.0.0",
+  "description": "BRS (Bug Report System) — universal logging library with AI agent diagnostic skill for cross-platform bug diagnosis (uni-app, WeChat Mini Program, React Native, Android, iOS, Browser, Node, Electron)",
   "main": "index.js",
   "module": "index.mjs",
   "exports": {
@@ -27,9 +27,16 @@
     "miniprogram",
     "react-native",
     "android",
+    "ios",
+    "electron",
     "crash-reporter",
     "network-monitor",
-    "claude-code",
+    "breadcrumbs",
+    "privacy",
+    "sanitizer",
+    "mcp-server",
+    "ai-agent",
+    "reasonix",
     "skill"
   ],
   "author": "Kepsilent",

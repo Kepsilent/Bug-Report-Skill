@@ -1,13 +1,14 @@
 // ============================================================
-// BugReport — Universal Logging Library v2.1
 // ============================================================
-// Zero dependencies · UMD · 12KB gzipped · MIT License
+// BRS (Bug Report System) — Universal Logging Library v3.0
+// ============================================================
+// Zero dependencies · UMD · ~20KB gzipped · MIT License
 //
 //   import BR from 'bugreport'
 //   BR.init({ appName: 'MyApp' })
 //   BR.e('tag', 'something went wrong')
 //
-// Platforms: uni-app / WeChat Mini Program / React Native / Capacitor / Browser / Node
+// Platforms: uni-app / WeChat Mini Program / React Native / Capacitor / Browser / Node / Electron
 // ============================================================
 
 ;(function (root, factory) {
@@ -25,12 +26,14 @@
   var CAT = {
     CRASH:     'CRASH',
     NETWORK:   'NETWORK',
+    UI:        'UI',
     RENDER:    'RENDER',
     LIFECYCLE: 'LIFECYCLE',
     PERF:      'PERF',
     STORAGE:   'STORAGE',
     AUDIO:     'AUDIO',
     VIDEO:     'VIDEO',
+    BUSINESS:  'BUSINESS',
     EVAL:      'EVAL',
     APP:       'APP',
     USER:      'USER',
@@ -53,6 +56,39 @@
   var _adapt = { storage: null, device: null, page: null, net: null }
   var _timer = null
   var _stats = { errors: 0, warns: 0, fatals: 0, byCat: {}, byPage: {}, start: Date.now() }
+  var _crumbs    = []   // Breadcrumbs: FIFO fixed-size queue (max 50)
+  var _crumbsMax = 50
+  var _snapshot  = null // Latest state snapshot (overwrite on each save)
+
+  // ---- Sanitizer ----
+  var _sanitizerRules = [
+    /\d{11}/g,                                             // 11-digit phone numbers
+    /\d{17,18}/g,                                          // ID card numbers
+    /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g     // email addresses
+  ]
+  var _sensitiveKeys = ['password','passwd','pwd','secret','token','authorization','auth','api_key','apikey','accessToken','refreshToken','credential','credentials','privateKey','apiKey']
+  function _sanitize(val) {
+    if (val === null || val === undefined) return val
+    if (typeof val === 'string') {
+      var s = val
+      for (var i = 0; i < _sanitizerRules.length; i++) {
+        s = s.replace(_sanitizerRules[i], '***')
+      }
+      return s
+    }
+    if (Array.isArray(val)) { return val.map(_sanitize) }
+    if (typeof val === 'object') {
+      var out = {}
+      for (var k in val) {
+        if (val.hasOwnProperty(k)) {
+          var isSensitive = _sensitiveKeys.indexOf(k) >= 0
+          out[k] = isSensitive ? '***' : _sanitize(val[k])
+        }
+      }
+      return out
+    }
+    return val
+  }
 
   // ---- Adapters ----
   function adapter(type, impl) {
@@ -193,7 +229,7 @@
 
     // network watch
     if (_adapt.net && _adapt.net.watch) {
-      _adapt.net.watch(function(type) { _dev.netType = type; _emit(LEVEL.INFO, CAT.NETWORK, 'net:change', type) })
+      _adapt.net.watch(function(type) { _dev.netType = type; _crumb('net:change', type); _emit(LEVEL.INFO, CAT.NETWORK, 'net:change', type) })
     }
 
     _dev.netType = _adapt.net && _adapt.net.type ? _adapt.net.type() : 'unknown'
@@ -201,7 +237,7 @@
     // auto-patch network
     if (_cfg.captureNetwork) _patchNetwork()
 
-    _emit(LEVEL.INFO, CAT.APP, 'app:launch', 'BugReport v2.1 initialized')
+    _emit(LEVEL.INFO, CAT.APP, 'app:launch', 'BRS v3.0 initialized')
 
     if (_cfg.persist) _timer = setInterval(_persist, PERSIST_MS)
 
@@ -215,6 +251,9 @@
 
     var now = Date.now()
     _seq++
+    // Sanitize sensitive data before logging (memory-only, no I/O)
+    var safeMsg = _sanitize(String(message||''))
+    var safeExtra = extra ? _sanitize(extra) : null
     var log = {
       id:     _seq,
       time:   new Date(now).toISOString(),
@@ -224,10 +263,15 @@
       levelName:   LEVEL_NAME[level] || '?',
       cat:    Object.values(CAT).indexOf(category)>=0 ? category : CAT.APP,
       tag:    String(tag||''),
-      msg:    String(message||''),
+      msg:    safeMsg,
       stack:  String(stack||''),
       page:   _adapt.page ? (_adapt.page.get ? _adapt.page.get() : _adapt.page()) : '',
-      extra:  extra || null
+      extra:  safeExtra || null
+    }
+    // On FATAL/CRASH: attach breadcrumbs + snapshot automatically
+    if (level === LEVEL.FATAL) {
+      if (_crumbs.length) { log.extra = log.extra || {}; log.extra.breadcrumbs = _crumbs.slice() }
+      if (_snapshot !== null) { log.extra = log.extra || {}; log.extra.snapshot = _snapshot }
     }
 
     _logs.push(log)
@@ -247,6 +291,14 @@
     if (!_watch.length) return
     setTimeout(function() { _watch.forEach(function(cb) { try { cb(log) } catch(e) {} }) }, 0)
   }
+
+  // ---- Breadcrumbs ----
+  function _crumb(tag, msg) {
+    var now = Date.now()
+    _crumbs.push({ t: now, time: new Date(now).toISOString(), tag: String(tag||''), msg: String(msg||'') })
+    while (_crumbs.length > _crumbsMax) _crumbs.shift()
+  }
+  function _crumbsSnapshot() { return _crumbs.slice() }
 
   // ---- Shortcuts ----
   function v(t,m,x) { return _emit(LEVEL.VERBOSE, CAT.APP, t, m, '', x) }
@@ -324,10 +376,10 @@
           var dur = Date.now() - start
           var size = 0
           try { var cl = resp.headers.get('content-length'); if (cl) size = parseInt(cl)||0 } catch(e) {}
-          net.req(method, url, resp.status, dur, size)
+          net.req(method, _sanitize(url), resp.status, dur, size)
           return resp
         }).catch(function(err) {
-          net.err(url, err.message || String(err))
+          net.err(_sanitize(url), err.message || String(err))
           throw err
         })
       }
@@ -350,14 +402,14 @@
           var dur = Date.now() - (self.__br_start || Date.now())
           var size = 0
           try { var cl = self.getResponseHeader('content-length'); if (cl) size = parseInt(cl)||0 } catch(e) {}
-          try { net.req(self.__br_method||'?', self.__br_url||'', self.status, dur, size) } catch(e) {}
+          try { net.req(self.__br_method||'?', _sanitize(self.__br_url||''), self.status, dur, size) } catch(e) {}
         }
         self.addEventListener('loadend', onEnd)
         self.addEventListener('error', function() {
-          try { net.err(self.__br_url||'', 'XHR Error') } catch(e) {}
+          try { net.err(_sanitize(self.__br_url||''), 'XHR Error') } catch(e) {}
         })
         self.addEventListener('timeout', function() {
-          try { net.timeout(self.__br_url||'', Date.now() - (self.__br_start||Date.now())) } catch(e) {}
+          try { net.timeout(_sanitize(self.__br_url||''), Date.now() - (self.__br_start||Date.now())) } catch(e) {}
         })
         return _netXHRSendRef.apply(this, arguments)
       }
@@ -387,10 +439,10 @@
 
   // ---- Lifecycle ----
   var life = {
-    fg: function() { _emit(LEVEL.INFO, CAT.LIFECYCLE, 'life:foreground', '') },
-    bg: function() { _emit(LEVEL.INFO, CAT.LIFECYCLE, 'life:background', '') },
-    in_: function(p) { _emit(LEVEL.DEBUG, CAT.LIFECYCLE, 'life:page-in', p||'') },
-    out: function(p) { _emit(LEVEL.DEBUG, CAT.LIFECYCLE, 'life:page-out', p||'') }
+    fg: function() { _crumb('life:foreground', ''); _emit(LEVEL.INFO, CAT.LIFECYCLE, 'life:foreground', '') },
+    bg: function() { _crumb('life:background', ''); _emit(LEVEL.INFO, CAT.LIFECYCLE, 'life:background', '') },
+    in_: function(p) { _crumb('life:page-in', p||''); _emit(LEVEL.DEBUG, CAT.LIFECYCLE, 'life:page-in', p||'') },
+    out: function(p) { _crumb('life:page-out', p||''); _emit(LEVEL.DEBUG, CAT.LIFECYCLE, 'life:page-out', p||'') }
   }
 
   // ---- Watch ----
@@ -518,6 +570,19 @@
     query: query, count: count, errCount: errCount, wrnCount: wrnCount, stats: stats,
     // Watch
     watch: watch,
+    // Breadcrumbs & Snapshot
+    crumb: function(t,m) { _crumb(t,m) },
+    crumbs: function() { return _crumbs.slice() },
+    clearCrumbs: function() { _crumbs=[] },
+    snapshot: function(d) { _snapshot = d },
+    getSnapshot: function() { return _snapshot },
+    clearSnapshot: function() { _snapshot = null },
+    // Sanitizer
+    sanitizer: {
+      addRule: function(r) { if (r instanceof RegExp) _sanitizerRules.push(r) },
+      rules: function() { return _sanitizerRules.slice() },
+      sanitize: _sanitize
+    },
     // Export
     exportLogs: exportLogs, copyLogs: copyLogs, clear: clear,
     // Device

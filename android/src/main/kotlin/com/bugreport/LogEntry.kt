@@ -42,3 +42,10 @@ data class BugReportStats(
     val byPage: Map<String, Int>,
     val device: DeviceSnapshot?
 )
+
+data class Crumb(
+    val t: Long,
+    val time: String,
+    val tag: String,
+    val msg: String
+)

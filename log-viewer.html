@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>BRS Log Viewer</title>
+<style>
+:root {
+  --bg: #1e1e1e;
+  --bg2: #252526;
+  --bg3: #2d2d2d;
+  --fg: #cccccc;
+  --fg2: #969696;
+  --border: #3c3c3c;
+  --sel: #094771;
+  --red: #f44747;
+  --orange: #e2b714;
+  --yellow: #cca700;
+  --green: #6a9955;
+  --blue: #569cd6;
+  --cyan: #4ec9b0;
+  --purple: #c586c0;
+  --white: #d4d4d4;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; font-size:12px; background:var(--bg); color:var(--fg); overflow:hidden; height:100vh; display:flex; flex-direction:column; }
+
+/* Toolbar */
+.br-toolbar { display:flex; align-items:center; justify-content:space-between; padding:4px 12px; background:var(--bg2); border-bottom:1px solid var(--border); min-height:36px; flex-shrink:0; }
+.br-tb-left { display:flex; align-items:center; gap:8px; }
+.br-title { font-weight:700; font-size:13px; color:var(--white); }
+.br-dot { width:8px; height:8px; border-radius:50%; display:inline-block; }
+.br-dot-ok { background:var(--green); }
+.br-dot-err { background:var(--red); animation: pulse 1.5s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+.br-stat { font-size:11px; color:var(--fg2); }
+.br-tb-right { display:flex; gap:4px; }
+.br-btn { font-size:11px; padding:3px 10px; background:var(--bg3); border:1px solid var(--border); color:var(--fg); border-radius:3px; cursor:pointer; }
+.br-btn:hover { background:var(--sel); }
+.br-btn-on { background:var(--blue); color:#fff; border-color:var(--blue); }
+
+/* Tabs */
+.br-tabs { display:flex; background:var(--bg2); border-bottom:1px solid var(--border); padding:0 8px; flex-shrink:0; }
+.br-tab { padding:6px 14px; cursor:pointer; color:var(--fg2); border-bottom:2px solid transparent; font-size:11px; white-space:nowrap; }
+.br-tab:hover { color:var(--fg); }
+.br-tab-sel { color:var(--white); border-bottom-color:var(--blue); }
+
+/* Stats bar */
+.br-stats { display:flex; gap:12px; padding:3px 12px; background:var(--bg2); border-bottom:1px solid var(--border); flex-shrink:0; }
+.br-stat-item { font-size:10px; padding:1px 6px; border-radius:3px; cursor:pointer; }
+.br-stat-item:hover { background:var(--bg3); }
+.br-st-e { color:var(--red); }
+.br-st-w { color:var(--yellow); }
+.br-st-n { color:var(--cyan); }
+.br-st-p { color:var(--purple); }
+.br-st-c { color:var(--orange); }
+.br-st-s { color:var(--green); }
+
+/* Search */
+.br-search { background:var(--bg2); padding:4px 12px; border-bottom:1px solid var(--border); display:flex; gap:8px; align-items:center; flex-shrink:0; }
+.br-search input { flex:1; padding:3px 8px; background:var(--bg); border:1px solid var(--border); color:var(--fg); font-size:11px; border-radius:3px; outline:none; }
+.br-search input:focus { border-color:var(--blue); }
+
+/* Log list */
+.br-list { flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; }
+.br-row { display:flex; align-items:center; border-bottom:1px solid var(--border); padding:3px 12px; cursor:pointer; gap:8px; }
+.br-row:hover { background:var(--bg3); }
+.br-row-sel { background:var(--sel) !important; }
+.br-time { font-size:10px; color:var(--fg2); min-width:100px; font-family: "SF Mono", "Fira Code", "Cascadia Code", monospace; white-space:nowrap; }
+.br-level { font-weight:700; font-size:10px; min-width:18px; text-align:center; white-space:nowrap; }
+.br-cat { font-size:10px; min-width:60px; padding:1px 4px; border-radius:2px; text-align:center; white-space:nowrap; }
+.br-cat-CRASH { background:rgba(244,71,71,.2); color:var(--red); }
+.br-cat-NETWORK { background:rgba(78,201,176,.2); color:var(--cyan); }
+.br-cat-UI, .br-cat-RENDER { background:rgba(197,134,192,.2); color:var(--purple); }
+.br-cat-PERF { background:rgba(226,183,20,.2); color:var(--orange); }
+.br-cat-LIFECYCLE { background:rgba(106,153,85,.2); color:var(--green); }
+.br-cat-BUSINESS, .br-cat-APP { background:rgba(86,156,214,.2); color:var(--blue); }
+.br-cat-AUDIO, .br-cat-VIDEO { background:rgba(255,159,26,.2); color:#ff9f1a; }
+.br-cat-USER, .br-cat-SYSTEM, .br-cat-STORAGE, .br-cat-EVAL { color:var(--fg2); }
+.br-tag { font-size:10px; color:var(--fg2); width:80px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; flex-shrink:0; }
+.br-msg { font-size:11px; flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.br-dur { font-size:10px; color:var(--fg2); min-width:44px; text-align:right; white-space:nowrap; }
+
+/* Detail panel */
+.br-detail { background:var(--bg2); border-top:2px solid var(--border); max-height:45vh; overflow-y:auto; flex-shrink:0; display:none; }
+.br-detail-show { display:block; }
+.br-detail-inner { padding:12px; }
+.br-detail h3 { font-size:13px; color:var(--white); margin-bottom:8px; }
+.br-detail dt { font-size:10px; color:var(--fg2); margin-top:6px; }
+.br-detail dd { font-size:11px; color:var(--fg); margin-left:0; word-break:break-all; }
+.br-detail pre { background:var(--bg); padding:8px; border-radius:4px; margin-top:8px; font-size:10px; color:var(--fg); overflow-x:auto; max-height:200px; }
+
+/* Empty */
+.br-empty { text-align:center; padding:40px; color:var(--fg2); }
+
+/* Level colors */
+.br-lv-V { color:var(--fg2); } .br-lv-D { color:var(--blue); } .br-lv-I { color:var(--green); } .br-lv-W { color:var(--yellow); } .br-lv-E { color:var(--red); } .br-lv-F { color:var(--purple); }
+
+/* Responsive - mobile */
+@media (max-width:600px) {
+  .br-dur { display:none; }
+  .br-cat { display:none; }
+  .br-tag { width:50px; }
+  .br-time { min-width:70px; font-size:9px; }
+}
+</style>
+</head>
+<body>
+
+<div class="br-toolbar">
+  <div class="br-tb-left">
+    <span class="br-title">BRS Log Viewer</span>
+    <span class="br-dot" id="statusDot"></span>
+    <span class="br-stat" id="logCount">0 logs</span>
+  </div>
+  <div class="br-tb-right">
+    <button class="br-btn" id="btnExport" onclick="exportLogs()">Export</button>
+    <button class="br-btn" id="btnCopy" onclick="copyLogs()">Copy</button>
+    <button class="br-btn" id="btnClear" onclick="clearLogs()">Clear</button>
+  </div>
+</div>
+
+<div class="br-tabs" id="tabs">
+  <span class="br-tab br-tab-sel" data-tab="all">All</span>
+  <span class="br-tab" data-tab="error">Errors</span>
+  <span class="br-tab" data-tab="warn">Warnings</span>
+  <span class="br-tab" data-tab="network">Network</span>
+  <span class="br-tab" data-tab="perf">Perf</span>
+  <span class="br-tab" data-tab="crumbs">Breadcrumbs</span>
+</div>
+
+<div class="br-stats" id="statsBar">
+  <span class="br-stat-item br-st-e" data-tab="error">E:<span id="cntE">0</span></span>
+  <span class="br-stat-item br-st-w" data-tab="warn">W:<span id="cntW">0</span></span>
+  <span class="br-stat-item br-st-n" data-tab="network">N:<span id="cntN">0</span></span>
+  <span class="br-stat-item br-st-p" data-tab="perf">P:<span id="cntP">0</span></span>
+  <span class="br-stat-item br-st-c">C:<span id="cntC">0</span></span>
+</div>
+
+<div class="br-search">
+  <input type="text" id="searchInput" placeholder="Filter logs..." oninput="renderLogs()">
+  <select id="catFilter" onchange="renderLogs()" style="font-size:11px;background:var(--bg);color:var(--fg);border:1px solid var(--border);padding:3px;border-radius:3px;">
+    <option value="">All Categories</option>
+    <option value="CRASH">CRASH</option><option value="NETWORK">NETWORK</option>
+    <option value="UI">UI</option><option value="RENDER">RENDER</option>
+    <option value="PERF">PERF</option><option value="LIFECYCLE">LIFECYCLE</option>
+    <option value="BUSINESS">BUSINESS</option><option value="APP">APP</option>
+    <option value="AUDIO">AUDIO</option><option value="VIDEO">VIDEO</option>
+    <option value="USER">USER</option><option value="SYSTEM">SYSTEM</option>
+    <option value="STORAGE">STORAGE</option><option value="EVAL">EVAL</option>
+  </select>
+</div>
+
+<div class="br-list" id="logList"></div>
+
+<div class="br-detail" id="detailPanel">
+  <div class="br-detail-inner" id="detailContent"></div>
+</div>
+
+<script>
+// ---- Data ----
+var allLogs = [];
+var activeTab = 'all';
+var selectedLogId = null;
+
+var LEVEL_LABEL = {0:'V',1:'D',2:'I',3:'W',4:'E',5:'F'};
+var LEVEL_NAME  = {0:'VERBOSE',1:'DEBUG',2:'INFO',3:'WARN',4:'ERROR',5:'FATAL'};
+
+// ---- API (called by WebView bridge or embedded) ----
+window.BRSViewer = {
+  load: function(logs) {
+    if (!Array.isArray(logs)) return;
+    allLogs = logs;
+    updateStats();
+    renderLogs();
+  },
+  push: function(log) {
+    allLogs.unshift(log);
+    updateStats();
+    renderLogs();
+  },
+  clear: function() {
+    allLogs = [];
+    updateStats();
+    renderLogs();
+  }
+};
+
+// ---- Stats ----
+function updateStats() {
+  document.getElementById('logCount').textContent = allLogs.length + ' logs';
+  document.getElementById('cntE').textContent = allLogs.filter(function(l){return l.level>=4;}).length;
+  document.getElementById('cntW').textContent = allLogs.filter(function(l){return l.level===3;}).length;
+  document.getElementById('cntN').textContent = allLogs.filter(function(l){return l.cat==='NETWORK';}).length;
+  document.getElementById('cntP').textContent = allLogs.filter(function(l){return l.cat==='PERF';}).length;
+  document.getElementById('cntC').textContent = allLogs.filter(function(l){return l.cat==='CRASH';}).length;
+  var dot = document.getElementById('statusDot');
+  dot.className = 'br-dot ' + (allLogs.filter(function(l){return l.level>=4;}).length > 0 ? 'br-dot-err' : 'br-dot-ok');
+}
+
+// ---- Tab switch ----
+document.getElementById('tabs').addEventListener('click', function(e) {
+  if (!e.target.classList.contains('br-tab')) return;
+  document.querySelectorAll('.br-tab').forEach(function(t){t.classList.remove('br-tab-sel')});
+  e.target.classList.add('br-tab-sel');
+  activeTab = e.target.dataset.tab;
+  renderLogs();
+});
+
+document.getElementById('statsBar').addEventListener('click', function(e) {
+  var item = e.target.closest('.br-stat-item');
+  if (!item) return;
+  var tab = item.dataset.tab;
+  if (!tab) return;
+  document.querySelectorAll('.br-tab').forEach(function(t){t.classList.remove('br-tab-sel')});
+  var tabEl = document.querySelector('.br-tab[data-tab="'+tab+'"]');
+  if (tabEl) tabEl.classList.add('br-tab-sel');
+  activeTab = tab;
+  renderLogs();
+});
+
+// ---- Filter ----
+function getFiltered() {
+  var search = (document.getElementById('searchInput').value||'').toLowerCase();
+  var cat = document.getElementById('catFilter').value;
+  var logs = allLogs.slice().reverse();
+
+  if (activeTab === 'error') logs = logs.filter(function(l){return l.level>=4;});
+  else if (activeTab === 'warn') logs = logs.filter(function(l){return l.level===3;});
+  else if (activeTab === 'network') logs = logs.filter(function(l){return l.cat==='NETWORK';});
+  else if (activeTab === 'perf') logs = logs.filter(function(l){return l.cat==='PERF';});
+  else if (activeTab === 'crumbs') logs = logs.filter(function(l){return l.tag&&l.tag.indexOf('life:')===0||l.tag==='net:change'||(l.extra&&l.extra.breadcrumbs);});
+
+  if (cat) logs = logs.filter(function(l){return l.cat===cat;});
+  if (search) logs = logs.filter(function(l){return (l.msg+l.tag+l.cat).toLowerCase().indexOf(search)>=0;});
+
+  return logs;
+}
+
+// ---- Render ----
+function renderLogs() {
+  var logs = getFiltered();
+  var list = document.getElementById('logList');
+  var html = '';
+  if (!logs.length) { html = '<div class="br-empty">No logs</div>'; }
+  else {
+    logs.forEach(function(l) {
+      var lvl = LEVEL_LABEL[l.level]||'?';
+      var dur = (l.extra&&l.extra.duration) ? (l.extra.duration+'ms') : '';
+      var sel = l.id === selectedLogId ? ' br-row-sel' : '';
+      html += '<div class="br-row'+sel+'" data-id="'+l.id+'" onclick="selectLog('+l.id+')">'+
+        '<span class="br-time">'+l.time.slice(11,23)+'</span>'+
+        '<span class="br-level br-lv-'+lvl+'">'+lvl+'</span>'+
+        '<span class="br-cat br-cat-'+(l.cat||'')+'">'+l.cat+'</span>'+
+        '<span class="br-tag" title="'+esc(l.tag)+'">'+esc(l.tag)+'</span>'+
+        '<span class="br-msg">'+esc(l.msg)+'</span>'+
+        '<span class="br-dur">'+dur+'</span>'+
+        '</div>';
+    });
+  }
+  list.innerHTML = html;
+}
+
+function selectLog(id) {
+  selectedLogId = (selectedLogId === id) ? null : id;
+  renderLogs();
+  showDetail(id);
+}
+
+function showDetail(id) {
+  var panel = document.getElementById('detailPanel');
+  var content = document.getElementById('detailContent');
+  if (!id) { panel.classList.remove('br-detail-show'); return; }
+  var l = null;
+  for (var i=0;i<allLogs.length;i++) { if (allLogs[i].id === id) { l = allLogs[i]; break; } }
+  if (!l) { panel.classList.remove('br-detail-show'); return; }
+
+  var html = '<dl>'+
+    '<dt>Time</dt><dd>'+esc(l.time)+'</dd>'+
+    '<dt>Level</dt><dd class="br-lv-'+(LEVEL_LABEL[l.level]||'?')+'">'+esc(l.levelLabel||'')+' ('+esc(l.levelName||'')+')</dd>'+
+    '<dt>Category</dt><dd>'+esc(l.cat||'')+'</dd>'+
+    '<dt>Tag</dt><dd>'+esc(l.tag||'')+'</dd>'+
+    '<dt>Message</dt><dd>'+esc(l.msg||'')+'</dd>'+
+    '<dt>Page</dt><dd>'+esc(l.page||'')+'</dd>'+
+    '</dl>';
+
+  if (l.stack) html += '<pre>'+esc(l.stack)+'</pre>';
+  if (l.extra) {
+    html += '<dt style="margin-top:8px">Extra</dt>';
+    if (l.extra.breadcrumbs) {
+      html += '<dd style="margin-top:4px">Breadcrumbs ('+l.extra.breadcrumbs.length+'):</dd><pre>';
+      l.extra.breadcrumbs.forEach(function(c){
+        html += '['+c.time.slice(11,23)+'] '+esc(c.tag)+' '+esc(c.msg)+'\n';
+      });
+      html += '</pre>';
+    }
+    if (l.extra.snapshot) {
+      html += '<dd style="margin-top:4px">Snapshot:</dd><pre>'+esc(JSON.stringify(l.extra.snapshot,null,2))+'</pre>';
+    }
+    if (l.extra.duration != null) {
+      html += '<dt>Duration</dt><dd>'+l.extra.duration+'ms</dd>';
+    }
+    if (l.extra.status != null) {
+      html += '<dt>Status</dt><dd>'+l.extra.status+'</dd>';
+    }
+  }
+
+  content.innerHTML = html;
+  panel.classList.add('br-detail-show');
+}
+
+// ---- Export ----
+function exportLogs() {
+  var text = formatText(allLogs);
+  var blob = new Blob([text], {type:'text/plain'});
+  var a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = 'brs-logs-'+new Date().toISOString().slice(0,10)+'.txt';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+function copyLogs() {
+  var text = formatText(allLogs);
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(text).then(function(){alert('Copied!')}).catch(function(){fallbackCopy(text)});
+  } else { fallbackCopy(text); }
+}
+
+function fallbackCopy(text) {
+  var ta = document.createElement('textarea'); ta.value = text;
+  document.body.appendChild(ta); ta.select();
+  document.execCommand('copy'); document.body.removeChild(ta);
+}
+
+function clearLogs() { if (confirm('Clear all logs?')) { BRSViewer.clear(); } }
+
+function formatText(logs) {
+  var t = 'BRS Log Export\n' + new Array(61).join('=') + '\nExport: '+new Date().toISOString()+'\nLogs: '+logs.length+'\n'+new Array(61).join('=')+'\n\n';
+  logs.reverse().forEach(function(l){
+    var icon = l.level>=4?'[E]':l.level>=3?'[W]':l.level>=2?'[I]':'[D]';
+    t += '#'+l.id+' '+icon+' '+l.time.slice(11,23)+' '+l.cat+' '+l.tag+'\n  '+l.msg+'\n';
+    if (l.stack) t += '  stack: '+l.stack.split('\n').slice(0,3).join('\n  > ')+'\n';
+    if (l.extra&&l.extra.breadcrumbs) t += '  crumbs: '+l.extra.breadcrumbs.length+' steps\n';
+    if (l.extra&&l.extra.snapshot) t += '  snapshot: present\n';
+    t += '\n';
+  });
+  return t;
+}
+
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+</script>
+</body>
+</html>

@@ -45,6 +45,14 @@ public struct BugReportStats: Codable {
     public let device: DeviceSnapshot?
 }
 
+/// Breadcrumb entry — lightweight FIFO trail.
+public struct CrumbEntry: Codable {
+    public let t: Int64
+    public let time: String
+    public let tag: String
+    public let msg: String
+}
+
 /// Simple type-erased Codable wrapper for extra fields.
 public struct AnyCodable: Codable {
     public let value: Any

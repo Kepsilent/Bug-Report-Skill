@@ -57,6 +57,13 @@ public class BugReport {
     private var byPage = [String: Int]()
     private var deviceSnapshot: DeviceSnapshot?
 
+    // Breadcrumbs — FIFO capped list
+    private var crumbs = [CrumbEntry]()
+    private let crumbsMax = 50
+
+    // Latest state snapshot
+    private var stateSnapshot: AnyCodable? = nil
+
     // MARK: - Net sub-object
     public struct NetSubsystem {
         public func req(method: String, url: String, status: Int, dur: Int64, size: Int64 = 0) {
@@ -152,7 +159,7 @@ public class BugReport {
             }
         }
 
-        br.info("app:launch", "BugReport v2.1 initialized (iOS)")
+        br.info("app:launch", "BRS v3.0 initialized (iOS)")
     }
 
     // MARK: - Logging shortcuts
@@ -224,6 +231,20 @@ public class BugReport {
 
     public static func device() -> DeviceSnapshot? { shared.deviceSnapshot }
 
+    // MARK: - Breadcrumbs & Snapshot
+    public static func crumb(_ tag: String, _ msg: String) {
+        let now = Int64(Date().timeIntervalSince1970 * 1000)
+        shared.lock.lock()
+        defer { shared.lock.unlock() }
+        shared.crumbs.append(CrumbEntry(t: now, time: shared.dateFormatter.string(from: Date()), tag: tag, msg: msg))
+        while shared.crumbs.count > shared.crumbsMax { shared.crumbs.removeFirst() }
+    }
+    public static func crumbs() -> [CrumbEntry] { shared.lock.lock(); defer { shared.lock.unlock() }; return shared.crumbs }
+    public static func clearCrumbs() { shared.lock.lock(); defer { shared.lock.unlock() }; shared.crumbs.removeAll() }
+    public static func snapshot(_ data: AnyCodable?) { shared.lock.lock(); defer { shared.lock.unlock() }; shared.stateSnapshot = data }
+    public static func getSnapshot() -> AnyCodable? { shared.lock.lock(); defer { shared.lock.unlock() }; return shared.stateSnapshot }
+    public static func clearSnapshot() { shared.lock.lock(); defer { shared.lock.unlock() }; shared.stateSnapshot = nil }
+
     // MARK: - Internal
     private func emit(_ level: Int, cat: LogCategory, tag: String, msg: String,
                       stack: String, extra: [String: AnyCodable]?) {
@@ -233,10 +254,20 @@ public class BugReport {
         guard ok, level >= cfg.minLevel else { return }
         seq += 1
         let now = Int64(Date().timeIntervalSince1970 * 1000)
+
+        // On FATAL: auto-attach breadcrumbs + snapshot
+        var finalExtra = extra
+        if level == LogLevel.fatal.rawValue {
+            var merged = extra ?? [:]
+            if !crumbs.isEmpty { merged["breadcrumbs"] = AnyCodable(crumbs) }
+            if let snap = stateSnapshot { merged["snapshot"] = snap }
+            finalExtra = merged
+        }
+
         let entry = LogEntry(
             id: seq, ts: now, time: dateFormatter.string(from: Date()),
             level: level, levelLabel: LogLevel(rawValue: level)?.label ?? "UNKNOWN",
-            cat: cat.rawValue, tag: tag, msg: msg, stack: stack, page: "", extra: extra, device: deviceSnapshot
+            cat: cat.rawValue, tag: tag, msg: msg, stack: stack, page: "", extra: finalExtra, device: deviceSnapshot
         )
 
         logs.append(entry)

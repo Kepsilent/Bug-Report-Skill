@@ -57,11 +57,15 @@ https://github.com/Kepsilent/Bug-Report-Skill
 
 ## 这是什么
 
-一个 AI 诊断技能 + 多语言日志库的集合体：
+**BRS (Bug Report System)** v3.0 — AI 诊断技能 + 多语言日志库的集合体：
 
 - **Skill** — 教会 AI 如何诊断 Bug（5 阶段：收集→分析→追踪→报告→修复）
-- **日志库** — 自动采集崩溃/网络/性能数据，一行代码接入
-- **可视化面板** — IDE 暗色终端风格，开发时 AI 可读，发布后用户可看
+- **日志库** — 自动采集崩溃/网络/性能/面包屑数据，一行代码接入
+- **面包屑 (Breadcrumbs)** — 崩溃前 50 步操作自动记录，FIFO 定长队列
+- **状态快照 (Snapshot)** — 开发者在关键节点保存业务状态，崩溃时自动打包
+- **隐私脱敏** — 网络拦截器前置清洗，敏感字段在内存中替换为 `***`
+- **可视化面板** — Chrome DevTools 风格 HTML 面板，WebView 跨平台通用
+- **MCP Server** — AI 可通过 MCP 协议直接查询日志、获取崩溃报告
 
 > 💡 所有 AI Agent 共享同一份 [SKILL.md](SKILL.md)，通过 [AGENTS.md](AGENTS.md) 自动发现。
 
@@ -69,9 +73,10 @@ https://github.com/Kepsilent/Bug-Report-Skill
 
 | SDK | 语言 | 平台 | 状态 |
 |-----|------|------|:---:|
-| `index.js` | JavaScript (UMD) | uni-app / 微信小程序 / React Native / Capacitor / 浏览器 / Node | ✅ Ready |
+| `index.js` | JavaScript (UMD) | uni-app / 微信小程序 / React Native / Capacitor / 浏览器 / Node / Electron | ✅ Ready |
 | `android/` | Kotlin | Android Studio 原生应用 (Java/Kotlin) | ✅ Ready |
 | `ios/` | Swift | iOS 原生应用 | ✅ Ready |
+| `mcp-server.js` | Node.js | AI Agent MCP 集成 | ✅ Ready |
 
 所有版本共享统一的 **LogEntry 数据合约**，确保跨平台日志格式一致 — SKILL.md 无需修改即可诊断任何平台的 Bug。
 
@@ -110,6 +115,17 @@ const ms = BR.perf.end('loadData')  // >3s 自动标 WARN
 // 实时监听
 BR.watch(log => { if (log.level >= 4) notify(log.msg) })
 
+// 面包屑 — 自动记录关键操作，崩溃时打包进日志
+BR.crumb('checkout', 'User clicked pay')
+
+// 状态快照 — 保存当前业务状态，崩溃时自动附带
+BR.snapshot({ orderId: 'ORD-999', step: 'payment' })
+
+// 隐私脱敏 — 默认拦截 password/token/手机号/邮箱等
+// 自定义规则: BR.sanitizer.addRule(/secretKey=\w+/g)
+
+// 面包屑自动埋点：life.fg/bg/in_/out + net:change 自动记录
+
 // 查询 & 导出
 BR.query({ cat: 'NETWORK', minLevel: 3 })
 BR.exportLogs('text')  // text / json / csv
@@ -135,6 +151,9 @@ BR.copyLogs()          // 一键复制
 | 网络 | `BR.net.req()` `BR.net.err()` `BR.net.slow()` `BR.net.timeout()` |
 | 微信 | `BR.wx.req()` `BR.wx.get()` `BR.wx.post()` |
 | 性能 | `BR.perf.start()` `BR.perf.end()` `BR.perf.mark()` |
+| 面包屑 | `BR.crumb()` `BR.crumbs()` `BR.clearCrumbs()` |
+| 快照 | `BR.snapshot()` `BR.getSnapshot()` `BR.clearSnapshot()` |
+| 脱敏 | `BR.sanitizer.addRule()` `BR.sanitizer.rules()` |
 | 生命周期 | `BR.life.fg()` `BR.life.bg()` `BR.life.in_()` `BR.life.out()` |
 | 查询 | `BR.query()` `BR.stats()` `BR.errCount()` `BR.wrnCount()` |
 | 导出 | `BR.exportLogs()` `BR.copyLogs()` `BR.clear()` |
@@ -216,19 +235,20 @@ BR.wx.req({
 
 ## 日志查看器
 
-所有平台统一暗色终端主题（VS Code 风格）：
+Chrome DevTools 风格纯 HTML 面板，WebView 跨平台通用：
 
-- 6 级色标 (V/D/I/W/E/F)
-- Tab 切换：全部 / 错误 / 警告 / 网络 / 性能 / 崩溃
-- 搜索过滤
-- 导出 Text / JSON / CSV
-- 一键复制
-- 实时刷新 / 暂停
+- 6 级色标 + 分类色块 (V/D/I/W/E/F)
+- Tab 切换：All / Errors / Warnings / Network / Perf / Breadcrumbs
+- 点击行展开详情（含 stack、breadcrumbs、snapshot）
+- 搜索过滤 + Category 筛选
+- Export Text + Copy to clipboard
+- 响应式设计，移动端可用
 
-| 平台 | 查看器文件 |
-|------|-----------|
-| uni-app / H5 / 小程序 | `log-viewer-common.vue` |
-| 纯 Web / H5 | `log-viewer.vue` |
+| 平台 | 查看器 |
+|------|-------|
+| **全平台 WebView** | `log-viewer.html` *(NEW v3.0)* |
+| uni-app / H5 / 小程序 | `log-viewer-common.vue` (legacy) |
+| 纯 Web / H5 | `log-viewer.vue` (legacy) |
 | Android 原生 | `LogViewerActivity.kt` |
 
 ---
@@ -261,7 +281,11 @@ BR.wx.req({
   "msg": "Connection refused",
   "stack": "Error: ...\n  at ...",
   "page": "pages/home/index",
-  "extra": { "url": "/api/data" },
+  "extra": {
+    "url": "/api/data",
+    "breadcrumbs": [{"t":1717651190000,"time":"...","tag":"nav","msg":"clicked checkout"}],
+    "snapshot": {"orderId":"ORD-999"}
+  },
   "device": {
     "model": "Pixel 9",
     "brand": "Google",
@@ -288,6 +312,10 @@ Bug-Report-Skill/
   SKILL.md                  # AI 诊断技能定义（所有 Agent 共享）
   INSTALL.md                # AI 自动安装指令
   README.md                 # 本文档
+  log-viewer.html           # 跨平台 WebView 日志面板 (NEW v3.0)
+  log-viewer.vue            # H5/Web 日志查看器 (legacy)
+  log-viewer-common.vue     # uni-app 通用日志查看器 (legacy)
+  mcp-server.js             # MCP Server — AI 协议查询日志 (NEW v3.0)
   android/                  # Android Studio Kotlin SDK
     build.gradle.kts
     src/main/kotlin/com/bugreport/
