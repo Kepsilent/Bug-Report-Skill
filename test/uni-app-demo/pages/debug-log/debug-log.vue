@@ -21,20 +21,20 @@
       </view>
     </view>
 
-    <!-- Filter header -->
+    <!-- Filter bar: always-visible toggle row + collapsible content below -->
     <view class="br-filter-bar">
-      <!-- Collapsed row -->
-      <view class="br-collapsed-row" v-show="tabsCollapsed">
-        <text class="br-collapsed-title">{{ tabLabel() }}</text>
-        <text class="br-collapsed-count">{{ allLogs.length }} {{ t('logs') }}</text>
-        <view class="br-collapse-btn" @tap="tabsCollapsed = false">
-          <text>▼ {{ t('expand_filter') }}</text>
+      <!-- Always-visible toggle row -->
+      <view class="br-toggle-row">
+        <text class="br-toggle-title" v-if="tabsCollapsed">{{ tabLabel() }}</text>
+        <text class="br-toggle-count" v-if="tabsCollapsed">{{ allLogs.length }} {{ t('logs') }}</text>
+        <text class="br-toggle-count" v-if="!tabsCollapsed">{{ allLogs.length }} {{ t('logs') }}</text>
+        <view class="br-toggle-btn" @tap="tabsCollapsed = !tabsCollapsed">
+          <text>{{ tabsCollapsed ? '▼ ' + t('expand_filter') : '▲ ' + t('collapse_filter') }}</text>
         </view>
       </view>
 
-      <!-- Expanded area -->
+      <!-- Collapsible: tabs + stats + search (only when expanded) -->
       <view v-show="!tabsCollapsed">
-        <!-- Tabs row -->
         <scroll-view class="br-tabs" scroll-x="true">
           <view :class="['br-tab', { on: tab===0 }]" @tap="tabToggle(0)">
             <text>{{ t('all') }}</text><text class="br-badge" v-if="allLogs.length">{{ allLogs.length }}</text>
@@ -57,12 +57,7 @@
           <view :class="['br-tab', { on: tab===6 }]" @tap="selectTab(6)">
             <text>{{ t('crumbs') }}</text><text class="br-badge" v-if="crumbCount">{{ crumbCount }}</text>
           </view>
-          <view class="br-collapse-btn" @tap="tabsCollapsed = true">
-            <text>▲ {{ t('collapse_filter') }}</text>
-          </view>
         </scroll-view>
-
-        <!-- Stats row -->
         <view class="br-stats">
           <text class="br-stat br-stat-e" @tap="selectTab(1)">{{ t('err') }}:{{ errCount }}</text>
           <text class="br-stat br-stat-w" @tap="selectTab(2)">{{ t('warn') }}:{{ wrnCount }}</text>
@@ -71,8 +66,6 @@
           <text class="br-stat br-stat-b" @tap="selectTab(6)">{{ t('crumb') }}:{{ crumbCount }}</text>
           <text class="br-stat br-stat-s">{{ fmtDur(stats.sessionMs) }}</text>
         </view>
-
-        <!-- Search bar -->
         <view class="br-filter" v-if="showSearch">
           <input class="br-input" v-model="searchText" :placeholder="t('search_ph')" />
           <view class="br-btn br-btn-sm" @tap="searchText=''; showSearch=false"><text>{{ t('close') }}</text></view>
@@ -505,11 +498,11 @@ export default {
 
 /* Filter header */
 .br-filter-bar { flex-shrink: 0; }
-.br-collapsed-row { display: flex; align-items: center; padding: 0 32rpx; height: 72rpx; background: var(--bg1); border-bottom: 1px solid var(--border); }
-.br-collapsed-title { font-size: 24rpx; font-weight: 600; color: #f0f6fc; }
-.br-collapsed-count { font-size: 20rpx; color: var(--fg2); margin-left: 16rpx; flex: 1; }
-.br-collapse-btn { flex-shrink: 0; padding: 8rpx 20rpx; color: var(--fg1); font-size: 20rpx; border: 1px solid var(--border); border-radius: 8rpx; background: var(--bg2); white-space: nowrap; }
-.br-collapse-btn:active { background: var(--border); }
+.br-toggle-row { display: flex; align-items: center; padding: 0 32rpx; height: 72rpx; background: var(--bg1); border-bottom: 1px solid var(--border); }
+.br-toggle-title { font-size: 24rpx; font-weight: 600; color: #f0f6fc; }
+.br-toggle-count { font-size: 20rpx; color: var(--fg2); margin-left: 16rpx; flex: 1; }
+.br-toggle-btn { flex-shrink: 0; padding: 8rpx 20rpx; color: var(--fg1); font-size: 20rpx; border: 1px solid var(--border); border-radius: 8rpx; background: var(--bg2); white-space: nowrap; }
+.br-toggle-btn:active { background: var(--border); }
 
 /* Buttons */
 .br-btn { background: var(--bg2); border: 1px solid var(--border); border-radius: 8rpx; padding: 8rpx 24rpx; }
@@ -539,7 +532,6 @@ export default {
 
 /* Tabs */
 .br-tabs { display: flex; padding: 0 32rpx; background: var(--bg1); border-bottom: 1px solid var(--border); white-space: nowrap; align-items: center; }
-.br-tabs .br-collapse-btn { margin-left: auto; }
 .br-tab { padding: 20rpx 24rpx; font-size: 22rpx; color: var(--fg1); border-bottom: 4rpx solid transparent; white-space: nowrap; display: flex; align-items: center; }
 .br-tab.on { color: #f0f6fc; border-bottom-color: var(--blue); }
 .br-tab-e.on { border-bottom-color: var(--red); }

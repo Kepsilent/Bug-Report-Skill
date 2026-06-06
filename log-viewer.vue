@@ -17,10 +17,11 @@
 
     <!-- Filter header — in-place toggle -->
     <div class="br-filter-bar">
-      <div class="br-collapsed-row" v-show="tabsCollapsed">
-        <span class="br-collapsed-title">{{ tabLabel() }}</span>
-        <span class="br-collapsed-count">{{ allLogs.length }} {{ t('logs') }}</span>
-        <button class="br-collapse-btn" @click="tabsCollapsed = false">▼ {{ t('expand_filter') }}</button>
+      <div class="br-toggle-row">
+        <span class="br-toggle-title" v-if="tabsCollapsed">{{ tabLabel() }}</span>
+        <span class="br-toggle-count" v-if="tabsCollapsed">{{ allLogs.length }} {{ t('logs') }}</span>
+        <span class="br-toggle-count" v-if="!tabsCollapsed">{{ allLogs.length }} {{ t('logs') }}</span>
+        <button class="br-toggle-btn" @click="tabsCollapsed = !tabsCollapsed">{{ tabsCollapsed ? '▼ ' + t('expand_filter') : '▲ ' + t('collapse_filter') }}</button>
       </div>
 
       <div v-show="!tabsCollapsed">
@@ -32,7 +33,6 @@
           <span :class="['br-tab', { on: tab===4 }]" @click="selectTab(4)">{{ t('perf_tab') }}<span class="br-badge" v-if="perfCount">{{ perfCount }}</span></span>
           <span :class="['br-tab br-tab-e', { on: tab===5 }]" @click="selectTab(5)">{{ t('crash_tab') }}<span class="br-badge br-badge-e" v-if="crashCount">{{ crashCount }}</span></span>
           <span :class="['br-tab', { on: tab===6 }]" @click="selectTab(6)">{{ t('crumbs') }}<span class="br-badge" v-if="crumbCount">{{ crumbCount }}</span></span>
-          <button class="br-collapse-btn" @click="tabsCollapsed = true">▲ {{ t('collapse_filter') }}</button>
         </div>
 
         <div class="br-stats">
@@ -334,11 +334,11 @@ export default {
 .br-dot-ok  { background: var(--green); }
 .br-dot-err { background: var(--red); box-shadow: 0 0 6px rgba(248,81,73,0.5); }
 
-.br-collapsed-row { display: flex; align-items: center; padding: 0 16px; height: 36px; background: var(--bg1); border-bottom: 1px solid var(--border); }
-.br-collapsed-title { font-size: 12px; font-weight: 600; color: #f0f6fc; flex-shrink: 0; }
-.br-collapsed-count { font-size: 10px; color: var(--fg2); margin-left: 8px; flex: 1; }
-.br-collapse-btn { flex-shrink: 0; padding: 3px 10px; color: var(--fg1); font-size: 10px; border: 1px solid var(--border); border-radius: 4px; background: var(--bg2); cursor: pointer; white-space: nowrap; }
-.br-collapse-btn:hover { background: var(--border); }
+.br-toggle-row { display: flex; align-items: center; padding: 0 16px; height: 36px; background: var(--bg1); border-bottom: 1px solid var(--border); }
+.br-toggle-title { font-size: 12px; font-weight: 600; color: #f0f6fc; flex-shrink: 0; }
+.br-toggle-count { font-size: 10px; color: var(--fg2); margin-left: 8px; flex: 1; }
+.br-toggle-btn { flex-shrink: 0; padding: 3px 10px; color: var(--fg1); font-size: 10px; border: 1px solid var(--border); border-radius: 4px; background: var(--bg2); cursor: pointer; white-space: nowrap; }
+.br-toggle-btn:hover { background: var(--border); }
 
 .br-btn { background: var(--bg2); border: 1px solid var(--border); border-radius: 4px; padding: 4px 12px; color: var(--fg0); font-size: 11px; cursor: pointer; }
 .br-btn:hover { background: #30363d; }
@@ -353,7 +353,6 @@ export default {
 .br-input { flex: 1; background: var(--bg0); border: 1px solid var(--border); border-radius: 4px; padding: 6px 12px; color: var(--fg0); font-size: 12px; font-family: monospace; outline: none; }
 .br-input:focus { border-color: var(--blue); }
 .br-tabs { display: flex; padding: 0 8px; background: var(--bg1); border-bottom: 1px solid var(--border); overflow-x: auto; align-items: center; }
-.br-tabs .br-collapse-btn { margin-left: auto; }
 .br-tab { padding: 8px 14px; font-size: 11px; color: var(--fg1); border-bottom: 2px solid transparent; cursor: pointer; display: flex; align-items: center; gap: 6px; white-space: nowrap; }
 .br-tab.on { color: #f0f6fc; border-bottom-color: var(--blue); }
 .br-tab-e.on { border-bottom-color: var(--red); }
