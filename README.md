@@ -6,18 +6,21 @@
 [![WeChat](https://img.shields.io/badge/WeChat-Mini%20Program-green)](#微信小程序)
 [![uni-app](https://img.shields.io/badge/uni--app-✓-brightgreen)](#hbuilderx--js)
 [![MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+[![Agents](https://img.shields.io/badge/AI%20Agents-Claude%20Code%20%7C%20Reasonix%20%7C%20Cursor%20%7C%20Codex%20%7C%20Copilot%20%7C%20Windsurf%20%7C%20Gemini%20CLI%20%7C%20...-6e40c9)](https://github.com/Kepsilent/Bug-Report-Skill)
 
-**一套 Skill，通吃所有平台。** 零依赖、一行接入、自动网络拦截、统一暗色终端可视化。
+**一套 Skill，通吃所有平台 × 所有 AI Agent。** 零依赖、一行接入、自动网络拦截、统一暗色终端可视化。
 
 ---
 
 ## 🚀 小白三分钟上手
 
-看不懂下面一堆技术名词？没关系，只要你会用 Claude Code 就行。
+看不懂下面一堆技术名词？没关系，只要你会用 **AI Agent** 就行。
 
-### 第 1 步：把链接发给 Claude Code
+支持所有主流 AI 编程助手：**Claude Code · Reasonix · Cursor · Gemini CLI · Codex · GitHub Copilot · Windsurf · Cline · Aider** …
 
-复制下面这个链接，粘贴给 Claude Code：
+### 第 1 步：把链接发给你的 AI Agent
+
+复制下面这个链接，粘贴给你的 AI Agent：
 
 ```
 https://github.com/Kepsilent/Bug-Report-Skill
@@ -27,7 +30,7 @@ https://github.com/Kepsilent/Bug-Report-Skill
 
 > "帮我安装这个 BugReport 到我的项目"
 
-Claude 会自动读取项目的 [INSTALL.md](INSTALL.md)，识别你的项目是什么类型（uni-app？Android Studio？小程序？），然后自动复制文件、加代码、注册页面。**全程不用你动脑子。**
+你的 AI Agent 会自动读取项目的 [INSTALL.md](INSTALL.md)，识别你的项目类型（uni-app？Android Studio？小程序？），然后自动复制文件、加代码、注册路由，还会把诊断技能装到自己身上。**全程不用你动脑子。**
 
 ### 第 3 步：装好了，直接用嘴说就行
 
@@ -38,7 +41,7 @@ Claude 会自动读取项目的 [INSTALL.md](INSTALL.md)，识别你的项目是
 > "这个崩溃是什么原因？"
 > "/bug-report"
 
-Claude 会自动激活诊断技能，帮你：
+你的 AI Agent 会自动激活诊断技能，帮你：
 
 - 📋 **收集信息** — 自动检测你的平台（uni-app / 微信 / Android / iOS / Node）
 - 🔍 **分析日志** — 支持 BugReport JSON、logcat、os.Logger 多种格式
@@ -54,11 +57,13 @@ Claude 会自动激活诊断技能，帮你：
 
 ## 这是什么
 
-一个 Claude Code Skill + 多语言日志库的集合体：
+一个 AI 诊断技能 + 多语言日志库的集合体：
 
-- **Skill** — 教会 Claude 如何诊断 Bug（5 阶段：收集→分析→追踪→报告→修复）
+- **Skill** — 教会 AI 如何诊断 Bug（5 阶段：收集→分析→追踪→报告→修复）
 - **日志库** — 自动采集崩溃/网络/性能数据，一行代码接入
 - **可视化面板** — IDE 暗色终端风格，开发时 AI 可读，发布后用户可看
+
+> 💡 所有 AI Agent 共享同一份 [SKILL.md](SKILL.md)，通过 [AGENTS.md](AGENTS.md) 自动发现。
 
 ## 版本
 
@@ -228,9 +233,9 @@ BR.wx.req({
 
 ---
 
-## Claude Code Skill
+## AI 诊断技能
 
-安装 Skill 后，说"帮我排查这个错误"自动激活。Skill 会：
+安装 Skill 后，任何 AI Agent 都能用，说"帮我排查这个错误"自动激活。Skill 会：
 
 1. **收集信息** — 自动检测平台（uni-app / 微信 / Android / iOS / Node）
 2. **分析日志** — 支持 BugReport JSON、logcat、os.Logger 多种格式
@@ -279,7 +284,9 @@ Bug-Report-Skill/
   index.js                  # JS 日志库 (UMD, 12KB)
   log-viewer.vue            # H5/Web 日志查看器
   log-viewer-common.vue     # uni-app 通用日志查看器（条件编译）
-  SKILL.md                  # Claude Code Skill 定义
+  AGENTS.md                 # AI Agent 通用入口（自动发现）
+  SKILL.md                  # AI 诊断技能定义（所有 Agent 共享）
+  INSTALL.md                # AI 自动安装指令
   README.md                 # 本文档
   android/                  # Android Studio Kotlin SDK
     build.gradle.kts

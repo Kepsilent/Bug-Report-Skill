@@ -1,11 +1,12 @@
 ---
 name: bug-report
 description: >
-  全能 Bug 报告与诊断技能。触发条件：用户说"报bug"、"有问题"、"出错了"、"崩溃"、"帮我排查"、
+  跨 Agent 万能 Bug 诊断技能。适用于 Claude Code / Reasonix / Cursor / Codex / Copilot / Windsurf / Gemini CLI / Cline 等。
+  触发条件：用户说"报bug"、"有问题"、"出错了"、"崩溃"、"帮我排查"、
   "帮我看看这个错误"、"分析日志"、分享错误截图/消息、或任何异常行为描述。
   支持实时日志分析、代码追踪、性能诊断、修复建议。零手动接入网络监控，可嵌入任何项目使用。
  
- 覆盖平台：uni-app / 微信小程序 / React Native / Capacitor / Cordova / 浏览器 / Node.js / Android 原生(Kotlin)
+ 覆盖平台：uni-app / 微信小程序 / React Native / Capacitor / Cordova / 浏览器 / Node.js / Android 原生(Kotlin) / iOS 原生(Swift)
 ---
 
 # BugReport — 全能 Bug 诊断技能

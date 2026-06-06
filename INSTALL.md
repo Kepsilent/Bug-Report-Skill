@@ -1,11 +1,12 @@
-# INSTALL.md — Claude Code 安装指令
+# INSTALL.md — AI Agent 自动安装指令
 
-> 给 Claude 看的：当用户提供 GitHub 链接 `https://github.com/Kepsilent/Bug-Report-Skill` 并要求安装时，按以下流程自动执行。
+> 给 **所有 AI Agent** 看的：当用户提供 GitHub 链接 `https://github.com/Kepsilent/Bug-Report-Skill` 并要求安装时，按以下流程自动执行。
+> 本文件与 [`AGENTS.md`](AGENTS.md) 配合使用 — AGENTS.md 引导 Agent 来到这里，INSTALL.md 提供具体步骤。
 
 **用户操作流程：**
-1. 用户把 GitHub 链接发给 Claude
+1. 用户把 GitHub 链接发给 AI Agent（Claude Code / Reasonix / Cursor / Gemini CLI / Codex / Copilot … 任意）
 2. 用户说"帮我安装这个 BugReport 到我的项目"
-3. Claude 读取此 INSTALL.md，按下面步骤执行
+3. AI Agent 读取此 INSTALL.md，按下面步骤执行
 
 ---
 
@@ -334,14 +335,175 @@ cp log-viewer.vue 用户项目/src/components/LogViewer.vue
 
 ---
 
-## Step 6: 安装 Skill（让 Claude 会诊断）
+## Step 6: 安装诊断 Skill — 让 AI Agent 会诊断
+
+⭐ **这是最关键的一步** — 没有安装 Skill，AI 就只会帮你接 SDK 但不会诊断 Bug。
+
+### 6.0 自我身份检测
+
+检查自己的运行时环境，判断自己是什么 Agent：
+
+| 信号 | Agent 类型 | 跳转到 |
+|------|-----------|--------|
+| 存在 `install_skill` 工具 / `.reasonix/` 目录 | **Reasonix** | Step 6R |
+| 存在 `~/.claude/` 目录 / `claude` CLI | **Claude Code** | Step 6C |
+| 存在 `.cursor/rules/` 目录 / `.cursorrules` | **Cursor** | Step 6CS |
+| 存在 `.github/` 目录 / 项目在 GitHub 上下文中 | **GitHub Copilot** | Step 6CP |
+| 存在 `GEMINI.md` 文件 / Gemini CLI 环境 | **Gemini CLI** | Step 6G |
+| 项目已有 `.windsurfrules` | **Windsurf** | Step 6W |
+| 存在 `.clinerules` / `.cline/` | **Cline** | Step 6CL |
+| 以上都不匹配 | **通用兼容模式** | Step 6X |
+
+---
+
+### Step 6C: Claude Code
 
 ```bash
 mkdir -p ~/.claude/skills/bug-report
 cp SKILL.md ~/.claude/skills/bug-report/
 ```
 
-验证：在 Claude Code 中说 `/bug-report` 或 "帮我排查这个错误"。
+> 告知用户：以后在 Claude Code 中说 `/bug-report` 或 "帮我排查这个错误" 即可激活诊断。
+
+---
+
+### Step 6R: Reasonix
+
+使用 Reasonix 的 `install_skill` 工具安装：
+
+- **name**: `bug-report`
+- **description**: `全能 Bug 诊断技能 — 5 阶段：收集→分析→追踪→报告→修复。覆盖 uni-app / 微信小程序 / Android / iOS / React Native / Node`
+- **runAs**: `subagent`
+- **body**: 编写一个指向 `SKILL.md` 的轻量入口，skill 核心逻辑读 `SKILL.md` 获取
+- **scope**: `project`（写入用户项目的 `.reasonix/skills/bug-report.md`）
+
+Skill body 内容参考：
+```markdown
+# BugReport — 全能 Bug 诊断技能 (Reasonix 版)
+
+每次被调用时，先读取项目中的 `SKILL.md` 获取完整的 Phase 1-5 诊断流程规范，然后按规范执行。
+所有日志格式识别、平台特定问题、报告模板的细节都在 SKILL.md 中。
+```
+
+> 告知用户：以后在 Reasonix 中说 `/bug-report` 或 "帮我排查这个错误" 即可激活诊断。
+
+---
+
+### Step 6CS: Cursor
+
+将 SKILL.md 内容改写为 Cursor Rules 格式，写入 `.cursor/rules/bug-report.mdc`：
+
+```bash
+mkdir -p .cursor/rules
+```
+
+文件内容：
+```markdown
+---
+description: 全能 Bug 诊断技能 — 5 阶段：收集→分析→追踪→报告→修复
+globs: **/*
+alwaysApply: false
+---
+
+[在这里粘贴 SKILL.md 中 Phase 1-5 的核心流程内容]
+```
+
+> 告知用户：以后在 Cursor 中可以用 `/bug-report` 或在 Chat 中说 "帮我排查这个错误" 来激活。
+
+---
+
+### Step 6CP: GitHub Copilot
+
+将诊断指令写入 `.github/copilot-instructions.md`：
+
+```bash
+mkdir -p .github
+touch .github/copilot-instructions.md
+```
+
+写入内容（精简版 Phase 1-5）：
+```markdown
+# BugReport 诊断技能
+
+当用户说"帮我排查"、"报bug"、"崩溃"、"分析日志"、"有问题"时激活：
+
+## 诊断流程
+1. 信息收集 — 检测平台、获取日志
+2. 日志分析 — 识别格式、定位错误
+3. 代码追踪 — 根据 stack 定位源文件
+4. 生成报告 — 写入 bugs/ 目录
+5. 修复执行 — 风险低时直接改代码
+
+完整规范见 https://github.com/Kepsilent/Bug-Report-Skill/blob/main/SKILL.md
+```
+
+---
+
+### Step 6G: Gemini CLI
+
+将诊断提示写入项目中的 `GEMINI.md`（如果不存在则创建）：
+
+```bash
+touch GEMINI.md
+```
+
+在文件顶部添加：
+```markdown
+## BugReport 诊断技能
+
+当用户报告 Bug、错误、崩溃时，按以下流程诊断：
+1. 读取本项目的 SKILL.md 了解完整 5 阶段诊断流程
+2. 收集信息 → 分析日志 → 追踪代码 → 生成报告 → 修复执行
+
+触发词：报bug、有问题、出错了、崩溃、帮我排查、分析日志、/bug-report
+```
+
+---
+
+### Step 6W: Windsurf
+
+将诊断规则写入 `.windsurfrules`：
+
+```markdown
+## BugReport 诊断
+
+当用户说"报bug"、"崩溃"、"帮我排查"、"分析日志"、"/bug-report"时：
+按 SKILL.md 的 5 阶段诊断流程执行（收集→分析→追踪→报告→修复）。
+```
+
+---
+
+### Step 6CL: Cline
+
+将诊断规则写入 `.clinerules`：
+
+```markdown
+## BugReport 诊断技能
+
+触发：报bug、崩溃、帮我排查、分析日志、/bug-report
+流程：收集信息 → 分析日志 → 追踪代码 → 生成报告 → 修复
+详见：SKILL.md
+
+安装 BugReport SDK 到用户项目时，走 INSTALL.md 的 Step 1-5 按平台安装。
+```
+
+---
+
+### Step 6X: 通用兼容模式
+
+创建项目根目录的 `AGENTS.md`（如不存在）：
+
+```markdown
+## BugReport 诊断技能已安装
+
+触发词：报bug、有问题、出错了、崩溃、帮我排查、分析日志、/bug-report
+
+诊断流程：按 SKILL.md 的 5 阶段执行（收集→分析→追踪→报告→修复）。
+
+完整规范：https://github.com/Kepsilent/Bug-Report-Skill/blob/main/SKILL.md
+```
+
+> 如无法自动判断 Agent 类型，跳过 Skill 安装，告知用户手动参考 README.md 中的"AI 诊断技能"章节。
 
 ---
 

@@ -2,3 +2,18 @@ node_modules/
 dist/
 .DS_Store
 *.log
+
+# Build artifacts
+android/build/
+test/android-demo/.gradle/
+test/android-demo/app/build/
+test/android-demo/.idea/
+test/android-demo/local.properties
+test/uni-app-demo/unpackage/
+
+# CodeGraph
+.codegraph/
+
+# Reasonix session cache (keep skills)
+.reasonix/desktop-topic-*
+reasonix.toml
