@@ -54,7 +54,7 @@
         </scroll-view>
         <!-- Toggle — always in the same row, same DOM position -->
         <view class="br-tab-toggle" @tap="tabsCollapsed = !tabsCollapsed">
-          <text>{{ tabsCollapsed ? '▼' : '▲' }}</text>
+          <text>{{ tabsCollapsed ? '▼ ' + t('expand_filter') : '▲ ' + t('collapse_filter') }}</text>
         </view>
       </view>
       <!-- Stats + search (only when expanded) -->
@@ -502,7 +502,7 @@ export default {
 .br-filter-row { display: flex; align-items: center; height: 72rpx; padding: 0 16rpx; background: var(--bg1); border-bottom: 1px solid var(--border); }
 .br-filter-title { font-size: 24rpx; font-weight: 600; color: #f0f6fc; flex-shrink: 0; }
 .br-filter-count { font-size: 20rpx; color: var(--fg2); margin-left: 16rpx; flex: 1; }
-.br-tab-toggle { flex-shrink: 0; width: 56rpx; height: 56rpx; display: flex; align-items: center; justify-content: center; font-size: 24rpx; color: var(--fg1); border-left: 1px solid var(--border); }
+.br-tab-toggle { flex-shrink: 0; padding: 8rpx 20rpx; display: flex; align-items: center; justify-content: center; font-size: 22rpx; color: var(--fg1); border-left: 1px solid var(--border); white-space: nowrap; }
 .br-tab-toggle:active { background: var(--bg2); }
 
 /* Buttons */
