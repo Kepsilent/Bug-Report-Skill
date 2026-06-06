@@ -164,6 +164,9 @@ cp index.js 用户项目/src/utils/bug-report.js
 
 # 复制 uni-app 通用日志查看器
 cp log-viewer-common.vue 用户项目/src/pages/debug-log.vue
+
+# 复制 AI 诊断规范（Reasonix/Cursor 等 skill 需要读取）
+cp SKILL.md 用户项目/
 ```
 
 ### 1.2 修改 App.vue — 添加初始化
@@ -208,6 +211,8 @@ try {
 ```bash
 # 将 android/ 目录复制到用户项目根目录
 cp -r android/ 用户项目/bugreport/
+# 复制 AI 诊断规范
+cp SKILL.md 用户项目/
 ```
 
 ### 2.2 修改 settings.gradle.kts
@@ -250,6 +255,7 @@ BugReport.init(this) { cfg ->
 ```bash
 cp index.js 用户项目/utils/bug-report.js
 cp log-viewer-common.vue 用户项目/pages/debug-log/debug-log.vue
+cp SKILL.md 用户项目/
 ```
 
 ### 3.2 修改 app.js
@@ -289,6 +295,7 @@ BR.wx.req({ url: '...', success: fn })
 ### 4.1 复制文件
 ```bash
 cp index.js 用户项目/src/utils/bug-report.js
+cp SKILL.md 用户项目/
 ```
 
 ### 4.2 修改 App.tsx
@@ -374,15 +381,39 @@ cp SKILL.md ~/.claude/skills/bug-report/
 - **name**: `bug-report`
 - **description**: `全能 Bug 诊断技能 — 5 阶段：收集→分析→追踪→报告→修复。覆盖 uni-app / 微信小程序 / Android / iOS / React Native / Node`
 - **runAs**: `subagent`
-- **body**: 编写一个指向 `SKILL.md` 的轻量入口，skill 核心逻辑读 `SKILL.md` 获取
+- **allowedTools**: `read_file, grep, glob, bash, edit_file, write_file, ls, web_fetch`
 - **scope**: `project`（写入用户项目的 `.reasonix/skills/bug-report.md`）
 
-Skill body 内容参考：
-```markdown
-# BugReport — 全能 Bug 诊断技能 (Reasonix 版)
+Skill body 内容（**自包含完整诊断流程，不依赖外部文件**）：
 
-每次被调用时，先读取项目中的 `SKILL.md` 获取完整的 Phase 1-5 诊断流程规范，然后按规范执行。
-所有日志格式识别、平台特定问题、报告模板的细节都在 SKILL.md 中。
+```markdown
+# BRS Bug 诊断技能
+
+## 触发条件
+用户说"报bug"、"有问题"、"出错了"、"崩溃"、"帮我排查"、"分析日志"、"/bug-report"时激活。
+
+## Phase 1: 信息收集
+- 提取：页面/功能、现象（闪退/白屏/报错/卡住）、频率（必现/偶发）、严重度
+- 自动检测平台：检查 manifest.json/pages.json → uni-app；build.gradle.kts → Android；app.json+project.config.json → 微信小程序；package.json 含 react-native → RN
+- 日志获取：引导用户从 App 内 log-viewer 面板 Export，或粘贴 adb logcat / Xcode 输出
+
+## Phase 2: 日志分析
+- 格式识别：BRS JSON（含 "level"/"cat"/"levelLabel"/"device" 字段）、BRS Text（"BugReport Log Export" 头部）、logcat（"E/TAG (PID): msg"）、os.Logger
+- 分析框架：时间线重建 → 崩溃链追溯（检查 extra.breadcrumbs 还原用户路径）→ 网络诊断（检查 NETWORK 类别超时/失败）→ 性能诊断（PERF 类别）→ 生命周期检查
+- 敏感字段已脱敏为 ***，无需额外处理
+
+## Phase 3: 代码追踪
+- 根据 stack/page 定位源文件，检查 try/catch、null 检查、权限声明
+- 平台常见问题：uni-app 的 plus is not defined / 小程序域名白名单 / Android NetworkOnMainThreadException / iOS ATS
+
+## Phase 4: 生成报告
+写入 bugs/YYYY-MM-DD-<slug>.md，包含：报告时间、严重程度、影响页面、复现步骤、日志分析、根因分析、修复方案、风险等级
+
+## Phase 5: 修复执行
+- 根因明确 + 改动 <3 文件 + 低风险 → 直接修改代码
+- 根因不明确 → 标记需进一步排查，不强行修复
+
+完整规范参考：https://github.com/Kepsilent/Bug-Report-Skill/blob/main/SKILL.md
 ```
 
 > 告知用户：以后在 Reasonix 中说 `/bug-report` 或 "帮我排查这个错误" 即可激活诊断。
