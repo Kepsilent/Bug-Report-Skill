@@ -15,8 +15,15 @@
       </div>
     </div>
 
+    <!-- Collapsed bar (shown when tabs are hidden) -->
+    <div class="br-collapsed-bar" v-if="tabsCollapsed" @click="tabsCollapsed = false">
+      <span class="br-collapsed-title">{{ tabLabel() }}</span>
+      <span class="br-collapsed-count">{{ allLogs.length }} {{ t('logs') }}</span>
+      <span class="br-collapsed-chev">▼ {{ t('expand_filter') }}</span>
+    </div>
+
     <!-- Quick Stats -->
-    <div class="br-stats">
+    <div class="br-stats" v-if="!tabsCollapsed">
       <span class="br-stat br-stat-e" @click="tab = 1">{{ t('err') }}:{{ errCount }}</span>
       <span class="br-stat br-stat-w" @click="tab = 2">{{ t('warn') }}:{{ wrnCount }}</span>
       <span class="br-stat br-stat-n" @click="tab = 3">{{ t('net') }}:{{ netCount }}</span>
@@ -26,20 +33,20 @@
     </div>
 
     <!-- Filter bar -->
-    <div class="br-filter" v-if="showSearch">
+    <div class="br-filter" v-if="showSearch && !tabsCollapsed">
       <input class="br-input" v-model="searchText" :placeholder="t('search_ph')" />
       <button class="br-btn br-btn-sm" @click="searchText=''; showSearch=false">{{ t('close') }}</button>
     </div>
 
     <!-- Tabs -->
-    <div class="br-tabs">
-      <span :class="['br-tab', { on: tab===0 }]" @click="tab=0">{{ t('all') }}<span class="br-badge" v-if="allLogs.length">{{ allLogs.length }}</span></span>
-      <span :class="['br-tab br-tab-e', { on: tab===1 }]" @click="tab=1">{{ t('errors') }}<span class="br-badge br-badge-e" v-if="errCount">{{ errCount }}</span></span>
-      <span :class="['br-tab br-tab-w', { on: tab===2 }]" @click="tab=2">{{ t('warnings') }}<span class="br-badge br-badge-w" v-if="wrnCount">{{ wrnCount }}</span></span>
-      <span :class="['br-tab', { on: tab===3 }]" @click="tab=3">{{ t('network') }}<span class="br-badge" v-if="netCount">{{ netCount }}</span></span>
-      <span :class="['br-tab', { on: tab===4 }]" @click="tab=4">{{ t('perf_tab') }}<span class="br-badge" v-if="perfCount">{{ perfCount }}</span></span>
-      <span :class="['br-tab br-tab-e', { on: tab===5 }]" @click="tab=5">{{ t('crash_tab') }}<span class="br-badge br-badge-e" v-if="crashCount">{{ crashCount }}</span></span>
-      <span :class="['br-tab', { on: tab===6 }]" @click="tab=6">{{ t('crumbs') }}<span class="br-badge" v-if="crumbCount">{{ crumbCount }}</span></span>
+    <div class="br-tabs" v-if="!tabsCollapsed">
+      <span :class="['br-tab', { on: tab===0 }]" @click="tabToggle(0)">{{ t('all') }}<span class="br-badge" v-if="allLogs.length">{{ allLogs.length }}</span></span>
+content": "      <span :class="['br-tab br-tab-e', { on: tab===1 }]" @click="selectTab(1)">{{ t('errors') }}<span class="br-badge br-badge-e" v-if="errCount">{{ errCount }}</span></span>
+      <span :class="['br-tab br-tab-w', { on: tab===2 }]" @click="selectTab(2)">{{ t('warnings') }}<span class="br-badge br-badge-w" v-if="wrnCount">{{ wrnCount }}</span></span>
+      <span :class="['br-tab', { on: tab===3 }]" @click="selectTab(3)">{{ t('network') }}<span class="br-badge" v-if="netCount">{{ netCount }}</span></span>
+      <span :class="['br-tab', { on: tab===4 }]" @click="selectTab(4)">{{ t('perf_tab') }}<span class="br-badge" v-if="perfCount">{{ perfCount }}</span></span>
+      <span :class="['br-tab br-tab-e', { on: tab===5 }]" @click="selectTab(5)">{{ t('crash_tab') }}<span class="br-badge br-badge-e" v-if="crashCount">{{ crashCount }}</span></span>
+      <span :class="['br-tab', { on: tab===6 }]" @click="selectTab(6)">{{ t('crumbs') }}<span class="br-badge" v-if="crumbCount">{{ crumbCount }}</span></span>
     </div>
 
     <!-- Log list -->
@@ -186,7 +193,8 @@ var T = {
     exp_csv: 'CSV格式', exp_csv_desc: '电子表格兼容格式',
     cancel: '取消',
     copied: '已复制到剪贴板', copy_failed: '复制失败',
-    clear_title: '清空日志', clear_content: '确定清空所有日志吗？'
+    clear_title: '清空日志', clear_content: '确定清空所有日志吗？',
+    expand_filter: '展开筛选栏'
   },
   en: {
     ok: 'OK', issues: 'issues',
@@ -207,7 +215,8 @@ var T = {
     exp_csv: 'CSV format', exp_csv_desc: 'Spreadsheet-compatible table',
     cancel: 'Cancel',
     copied: 'Copied to clipboard', copy_failed: 'Copy failed',
-    clear_title: 'Clear Logs', clear_content: 'Clear all logs?'
+    clear_title: 'Clear Logs', clear_content: 'Clear all logs?',
+    expand_filter: 'Expand Filters'
   }
 }
 
@@ -216,7 +225,7 @@ export default {
   data() {
     return {
       allLogs: [], tab: 0, expand: -1, searchText: '',
-      showSearch: false, showExport: false, autoRefresh: true,
+      showSearch: false, showExport: false, autoRefresh: true, tabsCollapsed: false,
       errCount: 0, wrnCount: 0, netCount: 0, perfCount: 0, crashCount: 0, crumbCount: 0,
       stats: { sessionMs: 0, device: {} },
       lang: 'zh'
@@ -252,6 +261,15 @@ export default {
   },
   methods: {
     t(key) { return (T[this.lang] || T.zh)[key] || key },
+    tabToggle(n) {
+      if (this.tab === n) { this.tabsCollapsed = !this.tabsCollapsed }
+      else { this.tab = n; this.tabsCollapsed = false }
+    },
+    selectTab(n) { this.tab = n; this.tabsCollapsed = false },
+    tabLabel() {
+      var labels = [this.t('all'), this.t('errors'), this.t('warnings'), this.t('network'), this.t('perf_tab'), this.t('crash_tab'), this.t('crumbs')]
+      return labels[this.tab] || this.t('all')
+    },
     detectLang() {
       var loc = (typeof navigator !== 'undefined' && navigator.language) || ''
       this.lang = String(loc).toLowerCase().startsWith('zh') ? 'zh' : 'en'
@@ -311,6 +329,13 @@ export default {
 .br-dot { width: 8px; height: 8px; border-radius: 50%; }
 .br-dot-ok  { background: var(--green); }
 .br-dot-err { background: var(--red); box-shadow: 0 0 6px rgba(248,81,73,0.5); }
+
+.br-collapsed-bar { display: flex; align-items: center; padding: 5px 16px; background: var(--bg1); border-bottom: 1px solid var(--border); cursor: pointer; flex-shrink: 0; }
+.br-collapsed-bar:hover { background: var(--bg2); }
+.br-collapsed-title { font-size: 12px; font-weight: 600; color: #f0f6fc; }
+.br-collapsed-count { font-size: 10px; color: var(--fg2); margin-left: 8px; }
+.br-collapsed-chev { font-size: 10px; color: var(--fg1); margin-left: auto; }
+
 .br-btn { background: var(--bg2); border: 1px solid var(--border); border-radius: 4px; padding: 4px 12px; color: var(--fg0); font-size: 11px; cursor: pointer; }
 .br-btn:hover { background: #30363d; }
 .br-btn-sm { padding: 2px 8px; font-size: 10px; }

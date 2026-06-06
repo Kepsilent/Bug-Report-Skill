@@ -21,43 +21,50 @@
       </view>
     </view>
 
+    <!-- Collapsed bar (shown when tabs are hidden) -->
+    <view class="br-collapsed-bar" v-if="tabsCollapsed" @tap="tabsCollapsed = false">
+      <text class="br-collapsed-title">{{ tabLabel() }}</text>
+      <text class="br-collapsed-count">{{ allLogs.length }} {{ t('logs') }}</text>
+      <text class="br-collapsed-chev">▼ {{ t('expand_filter') }}</text>
+    </view>
+
     <!-- Quick Stats -->
-    <view class="br-stats">
-      <text class="br-stat br-stat-e" @tap="tab = 1">{{ t('err') }}:{{ errCount }}</text>
-      <text class="br-stat br-stat-w" @tap="tab = 2">{{ t('warn') }}:{{ wrnCount }}</text>
-      <text class="br-stat br-stat-n" @tap="tab = 3">{{ t('net') }}:{{ netCount }}</text>
-      <text class="br-stat br-stat-p" @tap="tab = 4">{{ t('perf') }}:{{ perfCount }}</text>
-      <text class="br-stat br-stat-b" @tap="tab = 6">{{ t('crumb') }}:{{ crumbCount }}</text>
+    <view class="br-stats" v-if="!tabsCollapsed">
+      <text class="br-stat br-stat-e" @tap="selectTab(1)">{{ t('err') }}:{{ errCount }}</text>
+      <text class="br-stat br-stat-w" @tap="selectTab(2)">{{ t('warn') }}:{{ wrnCount }}</text>
+      <text class="br-stat br-stat-n" @tap="selectTab(3)">{{ t('net') }}:{{ netCount }}</text>
+      <text class="br-stat br-stat-p" @tap="selectTab(4)">{{ t('perf') }}:{{ perfCount }}</text>
+      <text class="br-stat br-stat-b" @tap="selectTab(6)">{{ t('crumb') }}:{{ crumbCount }}</text>
       <text class="br-stat br-stat-s">{{ fmtDur(stats.sessionMs) }}</text>
     </view>
 
     <!-- Filter bar -->
-    <view class="br-filter" v-if="showSearch">
+    <view class="br-filter" v-if="showSearch && !tabsCollapsed">
       <input class="br-input" v-model="searchText" :placeholder="t('search_ph')" />
       <view class="br-btn br-btn-sm" @tap="searchText=''; showSearch=false"><text>{{ t('close') }}</text></view>
     </view>
 
     <!-- Tabs -->
-    <scroll-view class="br-tabs" scroll-x="true">
-      <view :class="['br-tab', { on: tab===0 }]" @tap="tab=0">
+    <scroll-view class="br-tabs" scroll-x="true" v-if="!tabsCollapsed">
+      <view :class="['br-tab', { on: tab===0 }]" @tap="tabToggle(0)">
         <text>{{ t('all') }}</text><text class="br-badge" v-if="allLogs.length">{{ allLogs.length }}</text>
       </view>
-      <view :class="['br-tab br-tab-e', { on: tab===1 }]" @tap="tab=1">
+      <view :class="['br-tab br-tab-e', { on: tab===1 }]" @tap="selectTab(1)">
         <text>{{ t('errors') }}</text><text class="br-badge br-badge-e" v-if="errCount">{{ errCount }}</text>
       </view>
-      <view :class="['br-tab br-tab-w', { on: tab===2 }]" @tap="tab=2">
+      <view :class="['br-tab br-tab-w', { on: tab===2 }]" @tap="selectTab(2)">
         <text>{{ t('warnings') }}</text><text class="br-badge br-badge-w" v-if="wrnCount">{{ wrnCount }}</text>
       </view>
-      <view :class="['br-tab', { on: tab===3 }]" @tap="tab=3">
+      <view :class="['br-tab', { on: tab===3 }]" @tap="selectTab(3)">
         <text>{{ t('network') }}</text><text class="br-badge" v-if="netCount">{{ netCount }}</text>
       </view>
-      <view :class="['br-tab', { on: tab===4 }]" @tap="tab=4">
+      <view :class="['br-tab', { on: tab===4 }]" @tap="selectTab(4)">
         <text>{{ t('perf_tab') }}</text><text class="br-badge" v-if="perfCount">{{ perfCount }}</text>
       </view>
-      <view :class="['br-tab br-tab-e', { on: tab===5 }]" @tap="tab=5">
+      <view :class="['br-tab br-tab-e', { on: tab===5 }]" @tap="selectTab(5)">
         <text>{{ t('crash_tab') }}</text><text class="br-badge br-badge-e" v-if="crashCount">{{ crashCount }}</text>
       </view>
-      <view :class="['br-tab', { on: tab===6 }]" @tap="tab=6">
+      <view :class="['br-tab', { on: tab===6 }]" @tap="selectTab(6)">
         <text>{{ t('crumbs') }}</text><text class="br-badge" v-if="crumbCount">{{ crumbCount }}</text>
       </view>
     </scroll-view>
@@ -218,7 +225,8 @@ var T = {
     exp_csv: 'CSV格式', exp_csv_desc: '电子表格兼容格式',
     cancel: '取消',
     copied: '已复制到剪贴板', copy_failed: '复制失败',
-    clear_title: '清空日志', clear_content: '确定清空所有日志吗？'
+    clear_title: '清空日志', clear_content: '确定清空所有日志吗？',
+    expand_filter: '展开筛选栏'
   },
   en: {
     ok: 'OK', issues: 'issues',
@@ -243,7 +251,8 @@ var T = {
     exp_csv: 'CSV format', exp_csv_desc: 'Spreadsheet-compatible table',
     cancel: 'Cancel',
     copied: 'Copied to clipboard', copy_failed: 'Copy failed',
-    clear_title: 'Clear Logs', clear_content: 'Clear all logs?'
+    clear_title: 'Clear Logs', clear_content: 'Clear all logs?',
+    expand_filter: 'Expand Filters'
   }
 }
 
@@ -253,7 +262,7 @@ export default {
   data() {
     return {
       allLogs: [], tab: 0, expand: -1, searchText: '',
-      showSearch: false, showExport: false, autoRefresh: true,
+      showSearch: false, showExport: false, autoRefresh: true, tabsCollapsed: false,
       errCount: 0, wrnCount: 0, netCount: 0, perfCount: 0, crashCount: 0, crumbCount: 0,
       stats: { sessionMs: 0, device: {} },
       lang: 'zh'
@@ -314,6 +323,15 @@ export default {
   },
   methods: {
     t: function(key) { return (T[this.lang] || T.zh)[key] || key },
+    tabToggle: function(n) {
+      if (this.tab === n) { this.tabsCollapsed = !this.tabsCollapsed }
+      else { this.tab = n; this.tabsCollapsed = false }
+    },
+    selectTab: function(n) { this.tab = n; this.tabsCollapsed = false },
+    tabLabel: function() {
+      var labels = [this.t('all'), this.t('errors'), this.t('warnings'), this.t('network'), this.t('perf_tab'), this.t('crash_tab'), this.t('crumbs')]
+      return labels[this.tab] || this.t('all')
+    },
     detectLang: function() {
       var loc = ''
       // #ifdef APP-PLUS
@@ -471,6 +489,13 @@ export default {
 .br-dot { width: 16rpx; height: 16rpx; border-radius: 50%; }
 .br-dot-ok  { background: var(--green); }
 .br-dot-err { background: var(--red); box-shadow: 0 0 12rpx rgba(248,81,73,0.5); }
+
+/* Collapsed bar */
+.br-collapsed-bar { display: flex; align-items: center; padding: 10rpx 32rpx; background: var(--bg1); border-bottom: 1px solid var(--border); flex-shrink: 0; }
+.br-collapsed-bar:active { background: var(--bg2); }
+.br-collapsed-title { font-size: 24rpx; font-weight: 600; color: #f0f6fc; }
+.br-collapsed-count { font-size: 20rpx; color: var(--fg2); margin-left: 16rpx; }
+.br-collapsed-chev { font-size: 20rpx; color: var(--fg1); margin-left: auto; }
 
 /* Buttons */
 .br-btn { background: var(--bg2); border: 1px solid var(--border); border-radius: 8rpx; padding: 8rpx 24rpx; }
