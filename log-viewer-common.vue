@@ -22,19 +22,14 @@
     </view>
 
     <!-- Filter header — collapsed / expanded in-place -->
+    <!-- Filter header — one row, same toggle position always -->
     <view class="br-filter-bar">
-      <!-- Collapsed row -->
-      <view class="br-collapsed-row" v-if="tabsCollapsed">
-        <text class="br-collapsed-title" @tap="tabsCollapsed = false">{{ tabLabel() }}</text>
-        <text class="br-collapsed-count" @tap="tabsCollapsed = false">{{ allLogs.length }} {{ t('logs') }}</text>
-        <view class="br-collapse-toggle" @tap="tabsCollapsed = false">
-          <text>▼ {{ t('expand_filter') }}</text>
-        </view>
-      </view>
-
-      <!-- Expanded: Tabs row with collapse button in same position -->
-      <view class="br-expanded-row" v-if="!tabsCollapsed">
-        <scroll-view class="br-tabs" scroll-x="true">
+      <view class="br-filter-row">
+        <!-- Collapsed: title + count -->
+        <text class="br-filter-title" v-if="tabsCollapsed">{{ tabLabel() }}</text>
+        <text class="br-filter-count" v-if="tabsCollapsed">{{ allLogs.length }} {{ t('logs') }}</text>
+        <!-- Expanded: scrollable tabs -->
+        <scroll-view class="br-tabs" scroll-x="true" v-if="!tabsCollapsed" :style="{flex:1}">
           <view :class="['br-tab', { on: tab===0 }]" @tap="tabToggle(0)">
             <text>{{ t('all') }}</text><text class="br-badge" v-if="allLogs.length">{{ allLogs.length }}</text>
           </view>
@@ -57,26 +52,25 @@
             <text>{{ t('crumbs') }}</text><text class="br-badge" v-if="crumbCount">{{ crumbCount }}</text>
           </view>
         </scroll-view>
-        <!-- Collapse button — same spot as the ▼ expand button -->
-        <view class="br-collapse-toggle" @tap="tabsCollapsed = true">
-          <text>▲ {{ t('collapse_filter') }}</text>
+        <!-- Toggle — always in the same row, same DOM position -->
+        <view class="br-tab-toggle" @tap="tabsCollapsed = !tabsCollapsed">
+          <text>{{ tabsCollapsed ? '▼' : '▲' }}</text>
         </view>
       </view>
-
-      <!-- Stats row (only when expanded) -->
-      <view class="br-stats" v-if="!tabsCollapsed">
-        <text class="br-stat br-stat-e" @tap="selectTab(1)">{{ t('err') }}:{{ errCount }}</text>
-        <text class="br-stat br-stat-w" @tap="selectTab(2)">{{ t('warn') }}:{{ wrnCount }}</text>
-        <text class="br-stat br-stat-n" @tap="selectTab(3)">{{ t('net') }}:{{ netCount }}</text>
-        <text class="br-stat br-stat-p" @tap="selectTab(4)">{{ t('perf') }}:{{ perfCount }}</text>
-        <text class="br-stat br-stat-b" @tap="selectTab(6)">{{ t('crumb') }}:{{ crumbCount }}</text>
-        <text class="br-stat br-stat-s">{{ fmtDur(stats.sessionMs) }}</text>
-      </view>
-
-      <!-- Search bar (only when expanded) -->
-      <view class="br-filter" v-if="showSearch && !tabsCollapsed">
-        <input class="br-input" v-model="searchText" :placeholder="t('search_ph')" />
-        <view class="br-btn br-btn-sm" @tap="searchText=''; showSearch=false"><text>{{ t('close') }}</text></view>
+      <!-- Stats + search (only when expanded) -->
+      <view v-if="!tabsCollapsed">
+        <view class="br-stats">
+          <text class="br-stat br-stat-e" @tap="selectTab(1)">{{ t('err') }}:{{ errCount }}</text>
+          <text class="br-stat br-stat-w" @tap="selectTab(2)">{{ t('warn') }}:{{ wrnCount }}</text>
+          <text class="br-stat br-stat-n" @tap="selectTab(3)">{{ t('net') }}:{{ netCount }}</text>
+          <text class="br-stat br-stat-p" @tap="selectTab(4)">{{ t('perf') }}:{{ perfCount }}</text>
+          <text class="br-stat br-stat-b" @tap="selectTab(6)">{{ t('crumb') }}:{{ crumbCount }}</text>
+          <text class="br-stat br-stat-s">{{ fmtDur(stats.sessionMs) }}</text>
+        </view>
+        <view class="br-filter" v-if="showSearch">
+          <input class="br-input" v-model="searchText" :placeholder="t('search_ph')" />
+          <view class="br-btn br-btn-sm" @tap="searchText=''; showSearch=false"><text>{{ t('close') }}</text></view>
+        </view>
       </view>
     </view>
 
@@ -503,14 +497,13 @@ export default {
 .br-dot-ok  { background: var(--green); }
 .br-dot-err { background: var(--red); box-shadow: 0 0 12rpx rgba(248,81,73,0.5); }
 
-/* Collapsed bar */
-.br-collapsed-row { display: flex; align-items: center; padding: 0 32rpx; height: 72rpx; background: var(--bg1); border-bottom: 1px solid var(--border); }
-.br-collapsed-title { font-size: 24rpx; font-weight: 600; color: #f0f6fc; }
-.br-collapsed-count { font-size: 20rpx; color: var(--fg2); margin-left: 16rpx; flex: 1; }
-.br-collapse-toggle { flex-shrink: 0; padding: 8rpx 20rpx; color: var(--fg1); font-size: 20rpx; border: 1px solid var(--border); border-radius: 8rpx; background: var(--bg2); }
-
-.br-expanded-row { display: flex; align-items: center; background: var(--bg1); border-bottom: 1px solid var(--border); }
-.br-expanded-row .br-collapse-toggle { margin-right: 20rpx; }
+/* Filter header */
+.br-filter-bar { flex-shrink: 0; }
+.br-filter-row { display: flex; align-items: center; height: 72rpx; padding: 0 16rpx; background: var(--bg1); border-bottom: 1px solid var(--border); }
+.br-filter-title { font-size: 24rpx; font-weight: 600; color: #f0f6fc; flex-shrink: 0; }
+.br-filter-count { font-size: 20rpx; color: var(--fg2); margin-left: 16rpx; flex: 1; }
+.br-tab-toggle { flex-shrink: 0; width: 56rpx; height: 56rpx; display: flex; align-items: center; justify-content: center; font-size: 24rpx; color: var(--fg1); border-left: 1px solid var(--border); }
+.br-tab-toggle:active { background: var(--bg2); }
 
 /* Buttons */
 .br-btn { background: var(--bg2); border: 1px solid var(--border); border-radius: 8rpx; padding: 8rpx 24rpx; }
@@ -523,7 +516,7 @@ export default {
 .br-btn-d:active { background: rgba(248,81,73,0.1); }
 
 /* Stats */
-.br-stats { display: flex; padding: 12rpx 32rpx; background: var(--bg1); border-bottom: 1px solid var(--border); font-family: monospace; font-size: 22rpx; flex-shrink: 0; }
+.br-stats { display: flex; padding: 12rpx 32rpx; background: var(--bg1); border-bottom: 1px solid var(--border); font-family: monospace; font-size: 22rpx; }
 .br-stats > * { margin-right: 28rpx; }
 .br-stat { color: var(--fg1); }
 .br-stat-e { color: var(--red); }
@@ -539,7 +532,7 @@ export default {
 .br-input:focus { border-color: var(--blue); }
 
 /* Tabs */
-.br-tabs { display: flex; flex: 1; padding: 0 16rpx; background: var(--bg1); white-space: nowrap; }
+.br-tabs { display: flex; background: var(--bg1); white-space: nowrap; }
 .br-tab { padding: 20rpx 24rpx; font-size: 22rpx; color: var(--fg1); border-bottom: 4rpx solid transparent; white-space: nowrap; display: flex; align-items: center; }
 .br-tab.on { color: #f0f6fc; border-bottom-color: var(--blue); }
 .br-tab-e.on { border-bottom-color: var(--red); }
