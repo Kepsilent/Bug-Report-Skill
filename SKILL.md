@@ -108,7 +108,7 @@ BugReport 支持多种日志来源，收到日志时首先识别格式：
 
 | 格式 | 特征 | 解析方法 |
 |------|------|---------|
-| BugReport JSON | `"level"`, `"cat"`, `"tagL"`, `"device"` 字段 | 直接解析，所有字段已结构化 |
+| BugReport JSON | `"level"`, `"cat"`, `"levelLabel"`, `"device"` 字段 | 直接解析，所有字段已结构化 |
 | BugReport Text | `BugReport Log Export` 头部 + `#ID E TIME CAT tag` | 按行解析，提取 ID/级别/分类/消息 |
 | Android logcat | `E/TAG ( PID): message` 格式 | 正则 `^([VDIWEF])/(\S+)\s*\(\s*\d+\):\s*(.*)` |
 | iOS os.Logger | `timestamp LEVEL Subsystem[pid:tid] message` | 正则解析时间戳和级别 |

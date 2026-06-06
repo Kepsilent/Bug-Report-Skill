@@ -80,7 +80,7 @@
         <!-- Row -->
         <view class="br-row">
           <text class="br-id">#{{ log.id }}</text>
-          <text :class="['br-lv-badge', 'br-lv-bg-' + log.level]">{{ log.tagL }}</text>
+          <text :class="['br-lv-badge', 'br-lv-bg-' + log.level]">{{ log.levelLabel }}</text>
           <text class="br-time">{{ fmtTime(log.ts) }}</text>
           <text class="br-cat">{{ log.cat }}</text>
           <text class="br-msg">{{ log.msg || log.tag }}</text>
@@ -91,7 +91,7 @@
         <view class="br-detail" v-if="expand === log.id">
           <view class="br-meta">
             <view class="br-meta-row"><text class="br-meta-k">ID</text><text class="br-meta-v">{{ log.id }}</text></view>
-            <view class="br-meta-row"><text class="br-meta-k">Level</text><text class="br-meta-v">{{ log.tagN }}</text></view>
+            <view class="br-meta-row"><text class="br-meta-k">Level</text><text class="br-meta-v">{{ log.levelName }}</text></view>
             <view class="br-meta-row"><text class="br-meta-k">Category</text><text class="br-meta-v">{{ log.cat }}</text></view>
             <view class="br-meta-row"><text class="br-meta-k">Tag</text><text class="br-meta-v">{{ log.tag }}</text></view>
             <view class="br-meta-row"><text class="br-meta-k">Page</text><text class="br-meta-v">{{ log.page }}</text></view>

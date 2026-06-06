@@ -68,7 +68,7 @@
         <!-- Row -->
         <div class="br-row">
           <span class="br-id">#{{ log.id }}</span>
-          <span :class="['br-lv-badge', 'br-lv-bg-' + log.level]">{{ log.tagL }}</span>
+          <span :class="['br-lv-badge', 'br-lv-bg-' + log.level]">{{ log.levelLabel }}</span>
           <span class="br-time">{{ fmtTime(log.ts) }}</span>
           <span class="br-cat">{{ log.cat }}</span>
           <span class="br-msg">{{ log.msg || log.tag }}</span>
@@ -79,7 +79,7 @@
         <div class="br-detail" v-if="expand === log.id">
           <table class="br-meta">
             <tr><td class="br-meta-k">{{ t('detail_id') }}</td><td>{{ log.id }}</td></tr>
-            <tr><td class="br-meta-k">{{ t('detail_level') }}</td><td>{{ log.tagN }}</td></tr>
+            <tr><td class="br-meta-k">{{ t('detail_level') }}</td><td>{{ log.levelName }}</td></tr>
             <tr><td class="br-meta-k">{{ t('detail_category') }}</td><td>{{ log.cat }}</td></tr>
             <tr><td class="br-meta-k">{{ t('detail_tag') }}</td><td>{{ log.tag }}</td></tr>
             <tr><td class="br-meta-k">{{ t('detail_page') }}</td><td>{{ log.page }}</td></tr>

@@ -220,8 +220,8 @@
       time:   new Date(now).toISOString(),
       ts:     now,
       level:  level,
-      tagL:   LEVEL_LABEL[level] || '?',
-      tagN:   LEVEL_NAME[level] || '?',
+      levelLabel:  LEVEL_LABEL[level] || '?',
+      levelName:   LEVEL_NAME[level] || '?',
       cat:    Object.values(CAT).indexOf(category)>=0 ? category : CAT.APP,
       tag:    String(tag||''),
       msg:    String(message||''),
@@ -437,7 +437,7 @@
 
     if (format === 'csv') {
       var c = 'id,time,level,category,tag,message,page\n'
-      logs.forEach(function(l) { c += [l.id, l.time, l.tagN, l.cat, l.tag, '"'+(l.msg||'').replace(/"/g,'""')+'"', l.page].join(',') + '\n' })
+      logs.forEach(function(l) { c += [l.id, l.time, l.levelName, l.cat, l.tag, '"'+(l.msg||'').replace(/"/g,'""')+'"', l.page].join(',') + '\n' })
       return c
     }
 
@@ -525,5 +525,5 @@
   }
 }))
 
-var BugReport=(typeof globalThis!=="undefined"?globalThis:typeof window!=="undefined"?window:typeof global!=="undefined"?global:this).BugReport
+const BugReport=(typeof globalThis!=="undefined"?globalThis:typeof window!=="undefined"?window:typeof global!=="undefined"?global:this).BugReport
 export default BugReport

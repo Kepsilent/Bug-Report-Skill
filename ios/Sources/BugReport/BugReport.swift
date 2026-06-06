@@ -207,8 +207,10 @@ public class BugReport {
 
     public static func copyLogs() -> Bool {
         let text = exportLogs("text")
+        guard !text.isEmpty else { return false }
         UIPasteboard.general.string = text
-        return true
+        // Verify the write took effect
+        return UIPasteboard.general.string == text
     }
 
     public static func clear() {

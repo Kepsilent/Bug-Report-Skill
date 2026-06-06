@@ -54,6 +54,7 @@ object BugReport {
     private var ok = false
     internal val cfg = Config()
     private val logs = CopyOnWriteArrayList<LogEntry>()
+    private val pendingLogs = mutableListOf<LogEntry>()  // buffered before init
     private var seq = 0L
     private val watchers = CopyOnWriteArrayList<(LogEntry) -> Unit>()
     private val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US)
@@ -138,6 +139,15 @@ object BugReport {
         }
 
         sessionStart = System.currentTimeMillis()
+
+        // Flush any logs that were emitted before init()
+        if (pendingLogs.isNotEmpty()) {
+            pendingLogs.forEach { entry ->
+                onLog(entry.level, entry.cat, entry.tag, entry.msg,
+                    if (entry.extra != null) @Suppress("UNCHECKED_CAST")(entry.extra as? Map<String, Any?>) else null)
+            }
+            pendingLogs.clear()
+        }
 
         // Crash handler
         if (cfg.captureGlobal) {
@@ -252,7 +262,12 @@ object BugReport {
 
     // ---- Internal ----
     internal fun onLog(level: Int, category: String, tag: String, msg: String, extra: Map<String, Any?>?): LogEntry {
-        if (!ok) return LogEntry(0, 0, "", 0, "", "", "", "", null, "", null, null)
+        // Auto-buffer: if not yet initialized, store in pending; flushed on init()
+        if (!ok) {
+            val dummy = LogEntry(0, System.currentTimeMillis(), "", level, LogLevel.from(level).label, category, tag, msg, null, "", extra, deviceSnapshot)
+            pendingLogs.add(dummy)
+            return dummy
+        }
         if (level < cfg.minLevel) return LogEntry(0, 0, "", 0, "", "", "", "", null, "", null, null)
 
         seq++

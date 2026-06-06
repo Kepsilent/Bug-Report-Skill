@@ -38,8 +38,8 @@ test('BR.exportLogs() works after ESM import', () => {
 
 test('Log entry uses correct level labels', () => {
   const log = BR.e('esm:labels', 'check labels')
-  if (log.tagN !== 'ERROR') throw new Error('expected tagN=ERROR, got ' + log.tagN)
-  if (log.tagL !== 'E') throw new Error('expected tagL=E, got ' + log.tagL)
+  if (log.levelName !== 'ERROR') throw new Error('expected levelName=ERROR, got ' + log.levelName)
+  if (log.levelLabel !== 'E') throw new Error('expected levelLabel=E, got ' + log.levelLabel)
   if (!log.time || !log.time.includes('T')) throw new Error('expected ISO time format, got: ' + log.time)
 })
 

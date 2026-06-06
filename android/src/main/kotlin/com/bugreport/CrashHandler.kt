@@ -45,7 +45,13 @@ class CrashHandler(private val onCrash: (LogEntry) -> Unit) : Thread.UncaughtExc
         onCrash(entry)
 
         // Chain to original handler — let the OS do its thing
-        original?.uncaughtException(thread, throwable)
+        // If no original handler, explicitly terminate to avoid stuck zombie process
+        if (original != null) {
+            original.uncaughtException(thread, throwable)
+        } else {
+            android.os.Process.killProcess(android.os.Process.myPid())
+            System.exit(10)
+        }
     }
 
     fun restore() {
