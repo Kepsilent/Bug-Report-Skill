@@ -19,7 +19,7 @@
 复制下面这行话，丢给你的 AI Agent，就装好了：
 
 ```
-帮我安装这个项目：https://github.com/Kepsilent/Bug-Report-Skill
+请帮我安装这个项目，如果已安装就更新到最新版：https://github.com/Kepsilent/Bug-Report-Skill
 ```
 
 👆 鼠标移到上面那行，点右上角出现的复制图标，粘贴到你的 AI 对话框里，回车。Agent 会自动检查你的项目类型（uni-app？Android？小程序？），复制 SDK 文件、加初始化代码、注册路由，还会把诊断 Skill 装到自己身上。**当前会话立刻生效，不需要你做任何额外操作。**

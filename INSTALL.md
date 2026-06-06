@@ -16,7 +16,7 @@
 
 **用户操作流程：**
 1. 用户把 GitHub 链接发给 AI Agent（Claude Code / Reasonix / Cursor / Gemini CLI / Codex / Copilot … 任意）
-2. 用户说"帮我安装这个 BugReport 到我的项目"
+2. 用户说"帮我安装这个 BugReport 到我的项目"或"请帮我安装这个项目，如果已安装就更新到最新版"
 3. AI Agent 读取此 INSTALL.md，按下面步骤执行
 
 ---
