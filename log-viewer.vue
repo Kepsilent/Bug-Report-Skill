@@ -17,10 +17,14 @@
 
     <!-- Filter header — in-place toggle -->
     <div class="br-filter-bar">
-      <div class="br-filter-row">
-        <span class="br-filter-title" v-if="tabsCollapsed">{{ tabLabel() }}</span>
-        <span class="br-filter-count" v-if="tabsCollapsed">{{ allLogs.length }} {{ t('logs') }}</span>
-        <div class="br-tabs" v-if="!tabsCollapsed" style="flex:1; overflow-x:auto">
+      <div class="br-collapsed-row" v-show="tabsCollapsed">
+        <span class="br-collapsed-title">{{ tabLabel() }}</span>
+        <span class="br-collapsed-count">{{ allLogs.length }} {{ t('logs') }}</span>
+        <button class="br-collapse-btn" @click="tabsCollapsed = false">▼ {{ t('expand_filter') }}</button>
+      </div>
+
+      <div v-show="!tabsCollapsed">
+        <div class="br-tabs">
           <span :class="['br-tab', { on: tab===0 }]" @click="tabToggle(0)">{{ t('all') }}<span class="br-badge" v-if="allLogs.length">{{ allLogs.length }}</span></span>
           <span :class="['br-tab br-tab-e', { on: tab===1 }]" @click="selectTab(1)">{{ t('errors') }}<span class="br-badge br-badge-e" v-if="errCount">{{ errCount }}</span></span>
           <span :class="['br-tab br-tab-w', { on: tab===2 }]" @click="selectTab(2)">{{ t('warnings') }}<span class="br-badge br-badge-w" v-if="wrnCount">{{ wrnCount }}</span></span>
@@ -28,10 +32,9 @@
           <span :class="['br-tab', { on: tab===4 }]" @click="selectTab(4)">{{ t('perf_tab') }}<span class="br-badge" v-if="perfCount">{{ perfCount }}</span></span>
           <span :class="['br-tab br-tab-e', { on: tab===5 }]" @click="selectTab(5)">{{ t('crash_tab') }}<span class="br-badge br-badge-e" v-if="crashCount">{{ crashCount }}</span></span>
           <span :class="['br-tab', { on: tab===6 }]" @click="selectTab(6)">{{ t('crumbs') }}<span class="br-badge" v-if="crumbCount">{{ crumbCount }}</span></span>
+          <button class="br-collapse-btn" @click="tabsCollapsed = true">▲ {{ t('collapse_filter') }}</button>
         </div>
-        <span class="br-tab-toggle" @click="tabsCollapsed = !tabsCollapsed">{{ tabsCollapsed ? '▼ ' + t('expand_filter') : '▲ ' + t('collapse_filter') }}</span>
-      </div>
-      <div v-if="!tabsCollapsed">
+
         <div class="br-stats">
           <span class="br-stat br-stat-e" @click="selectTab(1)">{{ t('err') }}:{{ errCount }}</span>
           <span class="br-stat br-stat-w" @click="selectTab(2)">{{ t('warn') }}:{{ wrnCount }}</span>
@@ -40,6 +43,7 @@
           <span class="br-stat br-stat-b" @click="selectTab(6)">{{ t('crumb') }}:{{ crumbCount }}</span>
           <span class="br-stat br-stat-s">{{ fmtDur(stats.sessionMs) }}</span>
         </div>
+
         <div class="br-filter" v-if="showSearch">
           <input class="br-input" v-model="searchText" :placeholder="t('search_ph')" />
           <button class="br-btn br-btn-sm" @click="searchText=''; showSearch=false">{{ t('close') }}</button>
@@ -330,11 +334,11 @@ export default {
 .br-dot-ok  { background: var(--green); }
 .br-dot-err { background: var(--red); box-shadow: 0 0 6px rgba(248,81,73,0.5); }
 
-.br-filter-row { display: flex; align-items: center; height: 36px; padding: 0 10px; background: var(--bg1); border-bottom: 1px solid var(--border); }
-.br-filter-title { font-size: 12px; font-weight: 600; color: #f0f6fc; flex-shrink: 0; }
-.br-filter-count { font-size: 10px; color: var(--fg2); margin-left: 8px; flex: 1; }
-.br-tab-toggle { flex-shrink: 0; padding: 0 10px; height: 30px; display: flex; align-items: center; justify-content: center; font-size: 11px; color: var(--fg1); border-left: 1px solid var(--border); cursor: pointer; white-space: nowrap; }
-.br-tab-toggle:hover { background: var(--bg2); }
+.br-collapsed-row { display: flex; align-items: center; padding: 0 16px; height: 36px; background: var(--bg1); border-bottom: 1px solid var(--border); }
+.br-collapsed-title { font-size: 12px; font-weight: 600; color: #f0f6fc; flex-shrink: 0; }
+.br-collapsed-count { font-size: 10px; color: var(--fg2); margin-left: 8px; flex: 1; }
+.br-collapse-btn { flex-shrink: 0; padding: 3px 10px; color: var(--fg1); font-size: 10px; border: 1px solid var(--border); border-radius: 4px; background: var(--bg2); cursor: pointer; white-space: nowrap; }
+.br-collapse-btn:hover { background: var(--border); }
 
 .br-btn { background: var(--bg2); border: 1px solid var(--border); border-radius: 4px; padding: 4px 12px; color: var(--fg0); font-size: 11px; cursor: pointer; }
 .br-btn:hover { background: #30363d; }
@@ -348,7 +352,8 @@ export default {
 .br-filter { display: flex; gap: 8px; padding: 8px 16px; background: var(--bg1); border-bottom: 1px solid var(--border); }
 .br-input { flex: 1; background: var(--bg0); border: 1px solid var(--border); border-radius: 4px; padding: 6px 12px; color: var(--fg0); font-size: 12px; font-family: monospace; outline: none; }
 .br-input:focus { border-color: var(--blue); }
-.br-tabs { display: flex; flex: 1; padding: 0 8px; background: var(--bg1); overflow-x: auto; }
+.br-tabs { display: flex; padding: 0 8px; background: var(--bg1); border-bottom: 1px solid var(--border); overflow-x: auto; align-items: center; }
+.br-tabs .br-collapse-btn { margin-left: auto; }
 .br-tab { padding: 8px 14px; font-size: 11px; color: var(--fg1); border-bottom: 2px solid transparent; cursor: pointer; display: flex; align-items: center; gap: 6px; white-space: nowrap; }
 .br-tab.on { color: #f0f6fc; border-bottom-color: var(--blue); }
 .br-tab-e.on { border-bottom-color: var(--red); }
