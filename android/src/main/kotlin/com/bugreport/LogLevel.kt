@@ -1,5 +1,5 @@
 // BugReport — Universal Logging Library for Android (Kotlin)
-// v2.1 · Zero bloat · Single-line init · MIT
+// v3.0 · Zero bloat · Single-line init · MIT
 // Usage: BugReport.init(app)
 
 package com.bugreport

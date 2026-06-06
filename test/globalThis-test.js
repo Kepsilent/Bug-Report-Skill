@@ -1,4 +1,4 @@
-// BugReport v2.1 — globalThis White Screen Fix Test
+// BRS v3.0 — globalThis White Screen Fix Test
 // Run: node test/globalThis-test.js
 // Verifies the UMD root fix that prevented white screen on uni-app app-service.
 

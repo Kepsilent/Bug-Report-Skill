@@ -1,4 +1,4 @@
-// BugReport v2.1 — WeChat Mini Program Adapter Test
+// BRS v3.0 — WeChat Mini Program Adapter Test
 // Run: node test/wx-adapter-test.js
 // Simulates WeChat Mini Program environment to verify BR.wx wrapper.
 

@@ -1,4 +1,4 @@
-// BugReport v2.1 — ESM Import Test
+// BRS v3.0 — ESM Import Test
 // Run: node test/esm-test.mjs
 // Verifies that index.mjs works with ESM import syntax (Vite, Webpack, etc.)
 

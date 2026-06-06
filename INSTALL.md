@@ -146,7 +146,7 @@ rm -f .reasonix/skills/bug-report.md
 > 检测到旧版 BugReport，已清理：
 > - 删除文件: xxx, xxx
 > - 清理引用: App.vue 中的旧 import、pages.json 中的旧路由
-> 现在开始安装 v2.1 新版...
+> 现在开始安装 BRS v3.0 新版...
 
 如果未检测到旧版，直接进入 Step 0，不废话。
 
@@ -182,7 +182,7 @@ grep -r "error-logger\|bug-report\|errorLogger\|bugReport" --include="*.js" --in
 如果找到旧版（如 `error-logger.js`）：
 - 检查 `App.vue` 和 `pages.json` 中旧 logger 的引用
 - 安装完成后，把旧的 import 替换为新版，避免两个日志系统并存导致的白屏/冲突
-- 告诉用户："发现旧版 logger，已替换为 BugReport v2.1"
+- 告诉用户："发现旧版 logger，已替换为 BRS v3.0"
 
 ### 1.1 复制文件
 根据 Step 0 的模块系统检测结果：
@@ -615,7 +615,7 @@ touch GEMINI.md
 
 - [ ] 编译通过，App 不白屏
 - [ ] `BR.init()` 调用不报错
-- [ ] 控制台/logcat/Xcode 出现 `BugReport v2.1 initialized`
+- [ ] 控制台/logcat/Xcode 出现 `BRS v3.0 initialized`
 - [ ] `BR.e('test', 'verify install')` 产生一条 ERROR 日志
 - [ ] `BR.query()` 返回刚写入的日志
 - [ ] `BR.exportLogs('text')` 返回格式化文本

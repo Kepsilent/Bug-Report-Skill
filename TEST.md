@@ -1,4 +1,4 @@
-# BugReport v2.1 全栈测试方案
+# BugReport v3.0 — 全栈测试方案
 
 ## 测试 1：JS SDK — Node.js 冒烟测试（⭐ 最优先，0 依赖立即跑）
 

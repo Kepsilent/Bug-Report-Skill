@@ -22,7 +22,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         val title = TextView(this).apply {
-            text = "BugReport v2.1 (Android)"
+            text = "BRS v3.0 (Android)"
             textSize = 20f
         }
 

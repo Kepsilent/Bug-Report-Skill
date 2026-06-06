@@ -17,3 +17,8 @@ test/uni-app-demo/unpackage/
 # Reasonix session cache (keep skills)
 .reasonix/desktop-topic-*
 reasonix.toml
+
+# BRS test artifacts
+bugs/
+d/
+install-to-*.bat

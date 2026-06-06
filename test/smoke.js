@@ -1,4 +1,4 @@
-// BugReport v2.1 — Smoke Test (JS SDK)
+// BRS v3.0 — Smoke Test (JS SDK)
 // Run: node test/smoke.js
 // Zero dependencies, tests all core APIs.
 

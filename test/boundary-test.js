@@ -1,4 +1,4 @@
-// BugReport v2.1 — Boundary & Edge Case Test
+// BRS v3.0 — Boundary & Edge Case Test
 // Run: node test/boundary-test.js
 // Tests: null, undefined, empty, overflow, illegal params, perf, lifecycle, destroy
 
